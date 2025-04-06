@@ -8,6 +8,8 @@
 .runtimeconfig.json
 .firebase/
 firebase.js
+.firebaserc
+
 
 ### macOS ###
 # General
