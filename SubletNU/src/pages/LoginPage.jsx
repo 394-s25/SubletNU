@@ -2,6 +2,9 @@ import React from "react";
 import { auth } from "../firebase";
 import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+import "../css/Login.css";
+
+
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -24,9 +27,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div>
+    <div className="container">
+
       <h2>Login with your Northwestern Email</h2>
       <button onClick={handleLogin}>Sign in with Google</button>
     </div>
+
   );
 }
