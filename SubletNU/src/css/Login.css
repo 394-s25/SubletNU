@@ -1,14 +1,23 @@
 .container {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: center; 
     justify-content: center;
-    height: auto; /* Adjust height to fit content */
+    width: 100%; /* Full width to cover the screen */
+    height: 100vh; /* Full height to cover the screen */
   }
   
   .title {
     margin-bottom: 20px;
     font-size: 20px;
+  }
+  
+  .login-box {
+    background-color: #f3e8ff; /* 淡紫色 */
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-align: center;
   }
   
   .button {

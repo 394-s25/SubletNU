@@ -28,10 +28,10 @@ export default function LoginPage() {
 
   return (
     <div className="container">
-
-      <h2>Login with your Northwestern Email</h2>
+<div className="login-box">
+      <h2 className="title">Login with your Northwestern Email</h2>
       <button onClick={handleLogin}>Sign in with Google</button>
     </div>
-
+    </div>
   );
 }
