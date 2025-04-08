@@ -1,0 +1,120 @@
+import React, { useState, useEffect } from "react";
+import { db, auth } from "../firebase";
+import { ref, push, onValue, orderByChild, query, set } from "firebase/database";
+import { useLocation } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+
+function Listing(){
+    const [listings, setListings] = useState([]);
+    const pathLocation = useLocation();
+    const pathname = pathLocation.pathname;
+
+    //
+    // if listing data exists, retrieve it and save the array to listings
+    //
+    useEffect( () => {
+        const listingQuery = pathname === '/profile' ? query(ref(db, 'userListings/' + auth.currentUser.uid), orderByChild("createdAt")) 
+                                                    : query(ref(db, 'listings'), orderByChild("createdAt"));
+        // const listingQuery = query(ref(db, 'listings'), orderByChild("createdAt"));
+        const unsubscribe = onValue(listingQuery, snapshot => {
+          if (snapshot.exists()) {
+            const listingData = snapshot.val();
+            const listingsArray = Object.entries(listingData).map(([key, value]) => ({
+              key, // db listing unique key
+              ...value
+            }));
+            
+            setListings(listingsArray);
+          } else {
+            console.log("No data avilable");
+          }
+        }, error => {
+          console.error("ERROR:" + error)
+        }
+        );
+    
+        return () => {
+          unsubscribe();
+        };
+    }, []); // empty so it runs only once
+
+
+    //
+    // Update listings 
+    //
+    // if the listing belongs to the user they can update its db entry
+    //
+    const updateListing = (listing) => {
+        // TODO
+        // link to createlistingPage
+        // extend that component page to handle an update
+    };
+
+    //
+    // Handle match request
+    //
+    // if current user is not the user who made the listing, 
+    // logs a matchRequest into the database
+    const handleRequestMatch = async (listingId, owner) => {
+        try {
+    
+        if (owner === auth.currentUser.uid){
+            // cant match with your own listing
+            alert("This user owns this listing. Can't match with a listing you own!")
+            return;
+        }
+        
+        const matchRequest = {
+            listingId,
+            requester: auth.currentUser.uid,
+            owner,
+            requestedAt: new Date()
+        };
+    
+        const dbMatchRef = ref(db, "matchRequests");
+        const newMatchRef = push(dbMatchRef);
+    
+        await set(newMatchRef, matchRequest);
+    
+        alert("Match request sent!");
+        } catch (error) {
+        console.error("Error sending match request:", error);
+        }
+    };
+
+
+    // if route is homepage: button is to start a match request
+    // if route is profile: button is to update the listing
+    return (
+        <ul>
+        {listings.map((listing) => (
+          <li key={listing.key}>
+            <h3>{listing.title}</h3>
+            <p>{listing.startDate} to {listing.endDate}</p>
+            <p>Location: {listing.location}</p>
+            <p>Price: ${listing.price}/month</p>
+            <p>{listing.description}</p>
+            {
+                pathname === '/' ? (
+                    <button onClick={() => handleRequestMatch(listing.key, listing.createdBy)}>
+                        Request Match
+                    </button>
+                ) : pathname === '/profile' ? (
+                    <button onClick={() => updateListing(listing)}>
+                        Update Listing
+                    </button>
+                ) : (
+                    <div>
+                        <h1>404 - Listing Not needed On This Page</h1>
+                        <h2>Replace with 404.html</h2>
+                    </div>
+                )
+            }
+          </li>
+        ))}
+      </ul>
+    );
+
+}
+
+export default Listing;
