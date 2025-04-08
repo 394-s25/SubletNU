@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { firestore, auth } from "../firebase";
 import { collection, query, onSnapshot, addDoc } from "firebase/firestore";
 import { Link } from "react-router-dom";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css"; // 引入样式
+
 import "../css/home.css"; // 
 
 export default function HomePage() {
@@ -62,13 +65,34 @@ export default function HomePage() {
 
 
         <div className="home-right">
-          <img
-            src="/2.png"
-            alt="map"
-            className="home-image"
-          />
+
+          <MapContainer
+            center={[42.055984, -87.675171]
+
+            }
+            zoom={15}
+            style={{ width: "100%", height: "100%" }}
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            {filteredListings.map((listing) => (
+              <Marker
+                key={listing.id}
+                position={[listing.lat || 41.8781, listing.lng || -87.6298]} // 👈 你需要在数据库里加 lat/lng 字段
+              >
+                <Popup>
+                  <strong>{listing.title}</strong>
+                  <br />
+                  {listing.location}
+                </Popup>
+              </Marker>
+            ))}
+          </MapContainer>
         </div>
       </div>
+
     </div>
   );
 
