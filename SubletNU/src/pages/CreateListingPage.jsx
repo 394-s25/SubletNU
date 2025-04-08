@@ -56,11 +56,12 @@ export default function CreateListingPage() {
         createdAt: new Date().toISOString(),
       }
 
+
       const newListingKey = push(child(ref(db), "listings")).key;
 
       const updates = {};
       updates["/listings/" + newListingKey] = newListing;
-      updates["/userListings/" + auth.currentUser.uid + "/" + newListingKey] = newListing;
+      updates["/users/" + auth.currentUser.uid + "/userListings/" + newListingKey] = newListing;
       
       console.log("Listing successfully added...");
       navigate("/");
