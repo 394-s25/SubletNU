@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { db, auth } from "../firebase";
 import { ref, push, update, child } from "firebase/database";
 import { useNavigate } from "react-router-dom";
-// import { start } from "repl";
+import "../css/createList.css";
 
 export default function CreateListingPage() {
   const [title, setTitle] = useState("");
@@ -72,66 +72,62 @@ export default function CreateListingPage() {
   };
 
   return (
-    <div>
-      <h2>Create a New Listing</h2>
-      <form onSubmit={handleSubmit} id='newListingForm'>
-        <input 
-          type="text" 
-          placeholder="Title" 
-          id="title"
-          value={title} 
-          onChange={(e) => setTitle(e.target.value)} 
-          required 
-        />
-        <br />
-        <label>Start Date:</label> 
-        <input
-          type="date"
-          id="start"
-          value={startDate}
-          onChange={handleStartDateRange}
-          max={endDate}
-          required
-        />
-        <br />
-        <label>End Date:</label> 
-        <input
-          type="date"
-          id="end"
-          value={endDate}
-          onChange={handleEndDateRange}
-          min={startDate}
-          required
-        />
-        <br />
-        <textarea 
-          placeholder="Description" 
-          id="desc"
-          value={description} 
-          onChange={(e) => setDescription(e.target.value)} 
-          required 
-        />
-        <br />
-        <input 
-          type="text" 
-          placeholder="Location" 
-          id="location"
-          value={location} 
-          onChange={(e) => setLocation(e.target.value)} 
-          required 
-        />
-        <br />
-        <input 
-          type="number" 
-          placeholder="Price" 
-          id="price"
-          value={price} 
-          onChange={(e) => setPrice(e.target.value)} 
-          required 
-        />
-        <br />
-        <button type="submit">Post Listing</button>
-      </form>
+    <div className="create-container">
+      <div className="create-box">
+        <h2 className="create-title">Create a New Listing</h2>
+        <form onSubmit={handleSubmit} id='newListingForm' className="create-form">
+          <input 
+            type="text" 
+            placeholder="Title" 
+            id="title"
+            value={title} 
+            onChange={(e) => setTitle(e.target.value)} 
+            required 
+          />
+          <label>Start Date:</label> 
+          <input
+            type="date"
+            id="start"
+            value={startDate}
+            onChange={handleStartDateRange}
+            max={endDate}
+            required
+          />
+          <label>End Date:</label> 
+          <input
+            type="date"
+            id="end"
+            value={endDate}
+            onChange={handleEndDateRange}
+            min={startDate}
+            required
+          />
+          <textarea 
+            placeholder="Description" 
+            id="desc"
+            value={description} 
+            onChange={(e) => setDescription(e.target.value)} 
+            required 
+          />
+          <input 
+            type="text" 
+            placeholder="Location" 
+            id="location"
+            value={location} 
+            onChange={(e) => setLocation(e.target.value)} 
+            required 
+          />
+          <input 
+            type="number" 
+            placeholder="Price" 
+            id="price"
+            value={price} 
+            onChange={(e) => setPrice(e.target.value)} 
+            required 
+          />
+          <button type="submit">Post Listing</button>
+        </form>
+      </div>
     </div>
   );
 }

@@ -1,0 +1,54 @@
+.create-container {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f3f4f6;
+}
+
+
+.create-box {
+    background-color: #f6efff;
+    padding: 40px;
+    border-radius: 16px;
+    width: 400px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+}
+
+.create-title {
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 30px;
+    color: #333;
+}
+
+.create-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.create-form input,
+.create-form textarea {
+    margin-bottom: 15px;
+    padding: 10px 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    resize: none;
+}
+
+.create-form button {
+    padding: 10px 16px;
+    font-size: 15px;
+    background-color: #7c3aed;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.create-form button:hover {
+    background-color: #5b21b6;
+}
