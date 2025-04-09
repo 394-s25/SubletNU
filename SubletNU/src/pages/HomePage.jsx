@@ -50,7 +50,7 @@ export default function HomePage() {
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            {filteredListings.map((listing) => (
+            {/* {filteredListings.map((listing) => (
               <Marker
                 key={listing.id}
                 position={[listing.lat || 41.8781, listing.lng || -87.6298]} // 👈 你需要在数据库里加 lat/lng 字段
@@ -61,7 +61,7 @@ export default function HomePage() {
                   {listing.location}
                 </Popup>
               </Marker>
-            ))}
+            ))} */}
           </MapContainer>
         </div>
       </div>
