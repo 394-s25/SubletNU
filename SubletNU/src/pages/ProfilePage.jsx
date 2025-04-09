@@ -2,6 +2,7 @@ import React from "react";
 import { auth } from "../firebase";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+import Listing from "../components/Listing";
 import "../css/profile.css"; 
 
 export default function ProfilePage() {
@@ -20,6 +21,10 @@ export default function ProfilePage() {
         <button className="logout-button" onClick={handleLogout}>
           Log Out
         </button>
+        <div>
+            <h2>Your Listings</h2>
+            <Listing />  
+        </div>
       </div>
     </div>
   );

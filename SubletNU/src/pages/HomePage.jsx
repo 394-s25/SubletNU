@@ -1,44 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { firestore, auth } from "../firebase";
-import { collection, query, onSnapshot, addDoc } from "firebase/firestore";
 import { Link } from "react-router-dom";
+
+import Listing from "../components/Listing";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css"; // 引入样式
-
 import "../css/home.css"; // 
 
+
 export default function HomePage() {
-  const [listings, setListings] = useState([]);
   const [filter, setFilter] = useState("");
-
-  useEffect(() => {
-    const q = query(collection(firestore, "listings"));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const listingsData = [];
-      querySnapshot.forEach((doc) => {
-        listingsData.push({ id: doc.id, ...doc.data() });
-      });
-      setListings(listingsData);
-    });
-    return unsubscribe;
-  }, []);
-
-  const filteredListings = listings.filter((listing) =>
-    listing.location.toLowerCase().includes(filter.toLowerCase())
-  );
-
-  const handleRequestMatch = async (listingId) => {
-    try {
-      await addDoc(collection(firestore, "matchRequests"), {
-        listingId,
-        requester: auth.currentUser.uid,
-        requestedAt: new Date(),
-      });
-      alert("Match request sent!");
-    } catch (error) {
-      console.error("Error sending match request", error);
-    }
-  };
 
 
   return (
@@ -60,6 +30,9 @@ export default function HomePage() {
             <Link to="/create-listing">Create New Listing</Link>
             <br />
             <Link to="/profile">View Profile</Link>
+          </div>
+          <div>
+              <Listing />
           </div>
         </div>
 
@@ -92,7 +65,6 @@ export default function HomePage() {
           </MapContainer>
         </div>
       </div>
-
     </div>
   );
 
