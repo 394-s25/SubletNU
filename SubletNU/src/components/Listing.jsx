@@ -3,7 +3,6 @@ import { db, auth } from "../firebase";
 import { ref, push, onValue, orderByChild, query, set, get, update } from "firebase/database";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { snapshot } from "node:test";
 
 function Listing(){
     const [listings, setListings] = useState([]);
@@ -16,7 +15,7 @@ function Listing(){
     // if listing data exists, retrieve it and save the array to listings
     //
     useEffect( () => {
-        const listingQuery = pathname === '/profile' ? query(ref(db, 'userListings/' + auth.currentUser.uid), orderByChild("createdAt")) 
+        const listingQuery = pathname === '/profile' ? query(ref(db, 'users/' + auth.currentUser.uid + '/userListings'), orderByChild("createdAt")) 
                                                     : query(ref(db, 'listings'), orderByChild("createdAt"));
         // const listingQuery = query(ref(db, 'listings'), orderByChild("createdAt"));
         const unsubscribe = onValue(listingQuery, snapshot => {
@@ -63,11 +62,11 @@ function Listing(){
     const handleRequestMatch = async (listingId, owner) => {
         try {
     
-        // if (owner === auth.currentUser.uid){
-        //     // cant match with your own listing
-        //     alert("This user owns this listing. Can't match with a listing you own!")
-        //     return;
-        // }
+        if (owner === auth.currentUser.uid){
+            // cant match with your own listing
+            alert("This user owns this listing. Can't match with a listing you own!")
+            return;
+        }
         
         // construct match request
         const matchRequest = {
@@ -79,6 +78,7 @@ function Listing(){
         };
 
         // check if match already exists, if it does return
+
 
         // add match to matches
     
@@ -133,20 +133,6 @@ function Listing(){
 
         // handle the updates
         await update(ref(db), updates);
-
-        
-
-        // const updates = {};
-        // updates["/listings/" + newListingKey] = newListing;
-        // updates["/users/" + auth.currentUser.uid + "/userListings/" + newListingKey] = newListing;
-        
-        // await update(ref(db), updates);
-        
-
-        // update the listing's matchRequests with the match id
-        // await update(dbUserRef, {
-        //     matchRequests: firebaseApiOrigin.database.ServerValue.arrayUnion(newMatchKey)
-        // });
 
         console.log('Match request added to user successfully.');
         // send notification/alert to listing owner

@@ -42,7 +42,7 @@ export default function CreateListingPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      console.log("Submitting data to Firestore...");
+      console.log("Submitting data to Firebase Realtime Database...");
       // store each listing under userListings/$currentUser.uid
       // and listings
       const newListing = {
@@ -74,7 +74,7 @@ export default function CreateListingPage() {
   return (
     <div>
       <h2>Create a New Listing</h2>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} id='newListingForm'>
         <input 
           type="text" 
           placeholder="Title" 
