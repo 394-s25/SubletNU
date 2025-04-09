@@ -4,8 +4,7 @@ import { Link } from "react-router-dom";
 import Listing from "../components/Listing";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css"; // 引入样式
-import "../css/home.css"; // 
-
+import "../css/home.css"; //
 
 export default function HomePage() {
   const [filter, setFilter] = useState("");
@@ -14,11 +13,9 @@ export default function HomePage() {
   // check for lat and lng in listings
   const filteredListings = listings.filter((listing) => listing.lat && listing.lng);
 
-
   return (
     <div className="home-container">
       <div className="home-box">
-
         <div className="home-left">
           <h2 className="home-title">Sublet Listings</h2>
 
@@ -40,13 +37,9 @@ export default function HomePage() {
           </div>
         </div>
 
-
         <div className="home-right">
-
           <MapContainer
-            center={[42.055984, -87.675171]
-
-            }
+            center={[42.055984, -87.675171]}
             zoom={15}
             style={{ width: "100%", height: "100%" }}
           >
@@ -71,6 +64,4 @@ export default function HomePage() {
       </div>
     </div>
   );
-
-
 }
