@@ -9,6 +9,10 @@ import "../css/home.css"; //
 
 export default function HomePage() {
   const [filter, setFilter] = useState("");
+  const [listings, setListings] = useState([]);
+
+  // check for lat and lng in listings
+  const filteredListings = listings.filter((listing) => listing.lat && listing.lng);
 
 
   return (
@@ -32,7 +36,7 @@ export default function HomePage() {
             <Link to="/profile">View Profile</Link>
           </div>
           <div>
-              <Listing />
+              <Listing setListings={setListings}/>
           </div>
         </div>
 
@@ -50,9 +54,9 @@ export default function HomePage() {
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            {/* {filteredListings.map((listing) => (
+            {filteredListings.map((listing) => (
               <Marker
-                key={listing.id}
+                key={listing.key}
                 position={[listing.lat || 41.8781, listing.lng || -87.6298]} // 👈 你需要在数据库里加 lat/lng 字段
               >
                 <Popup>
@@ -61,7 +65,7 @@ export default function HomePage() {
                   {listing.location}
                 </Popup>
               </Marker>
-            ))} */}
+            ))}
           </MapContainer>
         </div>
       </div>
