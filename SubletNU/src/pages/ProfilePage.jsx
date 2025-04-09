@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { auth } from "../firebase";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
@@ -7,6 +7,8 @@ import "../css/profile.css";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
+  const [filter, setFilter] = useState("");
+  const [listings, setListings] = useState([]);
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -23,7 +25,7 @@ export default function ProfilePage() {
         </button>
         <div>
             <h2>Your Listings</h2>
-            <Listing />  
+            <Listing setListings={setListings}/>  
         </div>
       </div>
     </div>
