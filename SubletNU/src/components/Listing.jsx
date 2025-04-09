@@ -13,8 +13,9 @@ import {
 import { useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
-function Listing() {
-  const [listings, setListings] = useState([]);
+
+function Listing({ setListings }) {
+  const [listings, setLocalListings] = useState([]);
   const [matchRequests, setMatchReq] = useState([]);
   const [matches, setMatches] = useState([]);
   const pathLocation = useLocation();
@@ -43,6 +44,7 @@ function Listing() {
               ...value,
             })
           );
+          setLocalListings(listingsArray);
           setListings(listingsArray);
         } else {
           console.log("No data avilable");
@@ -53,10 +55,11 @@ function Listing() {
       }
     );
 
+
     return () => {
       unsubscribe();
     };
-  }, []); // empty so it runs only once
+  }, [pathname, setListings]); // make it empty so it runs only once (?)
 
   //
   // Update listings

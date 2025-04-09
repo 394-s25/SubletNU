@@ -8,33 +8,24 @@ export default function CreateListingPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
+  const [isLocValid, setIsLocValid] = useState(true);
   const [price, setPrice] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const navigate = useNavigate();
 
 
-  const handleStartDateRange = (e) => {
-    const newStartDate = e.target.value;
-    if (newStartDate && endDate && newStartDate >= endDate){
-      // a start date and end date exists but start date is later than end date
-      // reset start date and alert user
-      setStartDate("");
-      alert("Start date must occur before end date!")
-    } else {
-      setStartDate(newStartDate);
-    }
-  };
 
-  const handleEndDateRange = (e) => {
-    const newEndDate = e.target.value;
-    if (newEndDate && startDate && newEndDate <= startDate){
-      // a start date and end date exists but end date is starts before start date
-      // reset start date and alert user
-      setEndDate("");
-      alert("End date must occur after start date!")
+  const handleLocationChange = (e) => {
+    const currLocation = e.target.value;
+    const addressRegex = /^[0-9]+\s[A-Za-z0-9\s]+,\s[A-Za-z\s]+,\s[A-Za-z]{2}\s[0-9]{5}$/;
+    setLocation(currLocation);
+
+    // check if address has a valid street num, name, city, state and zip
+    if (addressRegex.test(currLocation)){
+      setIsLocValid(true);
     } else {
-      setEndDate(newEndDate);
+      setIsLocValid(false);
     }
   };
   
@@ -43,8 +34,18 @@ export default function CreateListingPage() {
     e.preventDefault();
     try {
       console.log("Submitting data to Firebase Realtime Database...");
-      // store each listing under userListings/$currentUser.uid
-      // and listings
+
+      // check that data is valid
+      if (!isLocValid){
+        setLocation("");
+        alert("Please enter a valid address in the following format: 633 Clark St, Evanston, IL 60208");
+        return;
+      }
+
+
+
+      // store each listing under listings/newListingKey
+      // and users/currUser/userListings/newListingKey
       const newListing = {
         title,
         description,
@@ -89,7 +90,7 @@ export default function CreateListingPage() {
             type="date"
             id="start"
             value={startDate}
-            onChange={handleStartDateRange}
+            onChange={(e) => setStartDate(e.target.value)}
             max={endDate}
             required
           />
@@ -98,7 +99,7 @@ export default function CreateListingPage() {
             type="date"
             id="end"
             value={endDate}
-            onChange={handleEndDateRange}
+            onChange={(e) => setEndDate(e.target.value)}
             min={startDate}
             required
           />
@@ -111,10 +112,10 @@ export default function CreateListingPage() {
           />
           <input 
             type="text" 
-            placeholder="Location" 
+            placeholder="633 Clark St, Evanston, IL 60208" 
             id="location"
             value={location} 
-            onChange={(e) => setLocation(e.target.value)} 
+            onChange={handleLocationChange} 
             required 
           />
           <input 
