@@ -9,6 +9,7 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const [filter, setFilter] = useState("");
   const [listings, setListings] = useState([]);
+  const [matches, setMacthes] = useState([]);
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -23,6 +24,15 @@ export default function ProfilePage() {
         <button className="logout-button" onClick={handleLogout}>
           Log Out
         </button>
+        <div>
+          <h2>Notifications</h2>
+          <h3>Match Requests</h3>
+          <ul>
+            {matches.map((match) => (
+              <li key={match.id}>match</li>
+            ))}
+          </ul>
+        </div>
         <div>
             <h2>Your Listings</h2>
             <Listing setListings={setListings}/>  

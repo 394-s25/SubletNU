@@ -18,7 +18,7 @@ export default function CreateListingPage() {
 
   const handleLocationChange = (e) => {
     const currLocation = e.target.value;
-    const addressRegex = /^[0-9]+\s[A-Za-z0-9\s]+,\s[A-Za-z\s]+,\s[A-Za-z]{2}\s[0-9]{5}$/;
+    const addressRegex = /^[0-9]+\s[A-Za-z0-9\s]+\s[A-Za-z\s]+\s[A-Za-z]{2}\s[0-9]{5}$/;
     setLocation(currLocation);
 
     // check if address has a valid street num, name, city, state and zip
@@ -38,7 +38,7 @@ export default function CreateListingPage() {
       // check that data is valid
       if (!isLocValid){
         setLocation("");
-        alert("Please enter a valid address in the following format: 633 Clark St, Evanston, IL 60208");
+        alert("Please enter a valid address in the following format: 633 Clark St Evanston IL 60208");
         return;
       }
 
@@ -85,7 +85,7 @@ export default function CreateListingPage() {
             onChange={(e) => setTitle(e.target.value)} 
             required 
           />
-          <label>Start Date:</label> 
+          <label htmlFor="start">Start Date:</label> 
           <input
             type="date"
             id="start"
@@ -94,7 +94,7 @@ export default function CreateListingPage() {
             max={endDate}
             required
           />
-          <label>End Date:</label> 
+          <label htmlFor="end">End Date:</label> 
           <input
             type="date"
             id="end"
