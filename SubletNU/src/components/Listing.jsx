@@ -61,6 +61,8 @@ function Listing({ setListings }) {
     };
   }, [pathname, setListings]); // make it empty so it runs only once (?)
 
+
+
   //
   // Update listings
   //
@@ -71,6 +73,9 @@ function Listing({ setListings }) {
     // link to createlistingPage
     // extend that component page to handle an update
   };
+
+
+
 
   //
   // Handle match request
