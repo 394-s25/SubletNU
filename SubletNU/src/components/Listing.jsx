@@ -84,7 +84,7 @@ function Listing({ setListings }) {
   //
   // if current user is not the user who made the listing,
   // logs a matchRequest into the database
-  const handleRequestMatch = async (listingId, owner) => {
+  const handleRequestMatch = async (listingId, owner, ownerContact) => {
     try {
       if (owner === auth.currentUser.uid) {
         // cant match with your own listing
@@ -99,6 +99,8 @@ function Listing({ setListings }) {
         listingId,
         requester: auth.currentUser.uid,
         owner,
+        ownerContact,
+        requesterContact: auth.currentUser.email,
         requestedAt: new Date(),
         approved: false,
       };
@@ -217,7 +219,7 @@ function Listing({ setListings }) {
                 {pathname === "/" ? (
                   <button
                     onClick={() =>
-                      handleRequestMatch(listing.key, listing.createdBy)
+                      handleRequestMatch(listing.key, listing.createdBy, listing.contact)
                     }
                   >
                     Request Match
