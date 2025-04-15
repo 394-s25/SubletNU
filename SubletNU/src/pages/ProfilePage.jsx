@@ -104,6 +104,8 @@ export default function ProfilePage() {
       const snapshotReq = await get(dbMatchReq);
       const reqs = snapshotReq.val();
 
+
+
       if (!reqs) {
         console.log("No match requests found.");
         // return;
@@ -112,12 +114,13 @@ export default function ProfilePage() {
         const idx = Object.values(reqs).indexOf(matchObj.key);
         if (idx === -1){
           console.log("Value not found in match requests.");
+        } else {
+          // remove using index
+          console.log("Requester match request at index", idxOwner);
+          const removeRef = ref(db, 'users/' + matchObj.requester + '/userMatchRequests/' + idx);
+          await remove(removeRef);
+          console.log("DB Match Request", matchObj.key, " at index",idx, "was removed for requester");
         }
-
-        // remove using index
-        const removeRef = ref(db, 'users/' + matchObj.requester + '/userMatchRequests/' + idx);
-        await remove(removeRef);
-        console.log("DB Match Request", matchObj.key, " at index",idx, "was removed for requester");
       }
 
       //
@@ -134,21 +137,22 @@ export default function ProfilePage() {
         const idxOwner = Object.values(ownerVal).indexOf(matchObj.key);
         if (idxOwner === -1){
           console.log("Value not found in match requests.");
+        } else {
+          // remove using index
+          console.log("Owner match request at index", idxOwner);
+          const removeOwnerRef = ref(db, 'users/' + matchObj.owner + '/userMatchRequests/' + idxOwner);
+          await remove(removeOwnerRef);
+          console.log("DB Match Request", matchObj.key, " at index",idx, "was removed for sublet owner (requestee)");
         }
-
-        // remove using index
-        const removeOwnerRef = ref(db, 'users/' + matchObj.owner + '/userMatchRequests/' + idxOwner);
-        await remove(removeOwnerRef);
-        console.log("DB Match Request", matchObj.key, " at index",idx, "was removed for sublet owner (requestee)");
       }
 
+
+      // update match in db
+      await updateMatch(matchObj);
 
       // add to matches
       const newMatches = matchRequests.filter(item => item.key === matchObj.key);
       setMatches([...matches, ...newMatches]);
-
-      // update match in db
-      await updateMatch(matchObj);
 
       // remove from the local match lists
       removeIdFromList(matchObj.key);
@@ -178,6 +182,8 @@ export default function ProfilePage() {
     // add this match to their db lists
     const subletMatchOwnerRef = push(dbSubletOwnerRef, matchObj.key)
     const subletMatchReqRef = push(dbSubletRequestorRef, matchObj.key);
+    console.log("push ref for owner (matches):",subletMatchOwnerRef);
+    console.log("push ref for request (matches):",subletMatchReqRef);
   };
 
 
