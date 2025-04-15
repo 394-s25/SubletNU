@@ -81,13 +81,13 @@ function Listing({ setListings }) {
   // logs a matchRequest into the database
   const handleRequestMatch = async (listingId, owner) => {
     try {
-      if (owner === auth.currentUser.uid) {
-        // cant match with your own listing
-        alert(
-          "This user owns this listing. Can't match with a listing you own!"
-        );
-        return;
-      }
+      // if (owner === auth.currentUser.uid) {
+      //   // cant match with your own listing
+      //   alert(
+      //     "This user owns this listing. Can't match with a listing you own!"
+      //   );
+      //   return;
+      // }
 
       // construct match request
       const matchRequest = {

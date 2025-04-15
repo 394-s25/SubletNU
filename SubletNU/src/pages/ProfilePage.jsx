@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { db, auth } from "../firebase";
-import { ref, remove, update, onValue, get, onChildAdded } from "firebase/database";
+import { ref, 
+  remove,
+  push,
+  child, 
+  update, 
+  onValue, 
+  get, 
+  onChildAdded } from "firebase/database";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import Listing from "../components/Listing";
@@ -19,17 +26,15 @@ export default function ProfilePage() {
   //  listen for match requests to approve or deny
   useEffect( () => {
     return onChildAdded(dbMatchReqRef, (snapshot) => {
-      // console.log("Current matches:", matchRequestsIds);
-      // console.log("match req added:", snapshot.val());
+      
       const data = snapshot.val();
       if (!matchRequestsIds.includes(data)){
-        // console.log("match req added:", data);
         setRequestIds([...matchRequestsIds, data]);
+
         // get corresponding match request and display data
         const dbRef = ref(db,'matches/' + data);
         onValue(dbRef, (snap) => {
           if (snap.val()){
-            // console.log("getting match data:", snap.val());
             setRequests([...matchRequests, snap.val()]);
           }
         }, error => {
@@ -47,13 +52,14 @@ export default function ProfilePage() {
 
   // listen for matches (that have been sent back)
 
-  const handleApproveMatch = async(key) => {
+  const handleApproveMatch = async(key, requester, requestee) => {
     // change match approved to false
     update(ref(db, 'matches/' + key), {
       approved: 'true'
     });
     alert("Match Request Approved. Sending user your contact email.");
-    // remove the request from the matches/
+
+    // remove the request from the matches for both the requester and the requestee
     try{
       const snapshot = await get(dbMatchReqRef);
       const reqs = snapshot.val();
@@ -75,8 +81,10 @@ export default function ProfilePage() {
 
       // add to matches
       const newMatches = matchRequests.filter(item => item.key === key);
-      // const filteredMatches = newMatches.filter(item => !matches.includes(item));
       setMatches([...matches, ...newMatches]);
+
+      // update match in db
+      // updateMatch()
 
       // remove from the local match lists
       removeIdFromList(key);
@@ -95,6 +103,10 @@ export default function ProfilePage() {
 
   const removeReqFromList = (key) => {
     setRequests(items => items.filter(item => item.key !== key));
+  };
+
+  const updateMatch = (requester, requestee) => {
+
   };
 
 
@@ -116,25 +128,37 @@ export default function ProfilePage() {
           <h3>Open Match Requests</h3>
           {matchRequests.length !==0 ? 
             <ul>
-
-              {matchRequests.map((match) => (
-                <li key={match.key}>
-                  <p>User {match.requester} wants to sublet your listing {match.listingId}</p>
-                  <button onClick={() => handleApproveMatch(match.key)}>Approve</button>
-                </li>
-              ))}
+              {matchRequests.map((match) => {
+                if (match.owner !== auth.currentUser.uid){
+                  return <li key={match.key}>
+                          <p>Waiting on sublet owner for sublet {match.listingId}</p>
+                        </li>
+                } else {
+                  return <li key={match.key}>
+                    <p>User {match.requester} wants to sublet your listing {match.listingId}</p>
+                    <button onClick={() => handleApproveMatch(match.key, match.requester, match.owner)}>Approve</button>
+                  </li>
+                }
+              })}
             </ul>
             : <p>No match requests</p>}
 
           <h3>Responses/Matches</h3>
           {matches.length !==0 ? 
             <ul>
-              {matches.map((match) => (
-                <li key={match.key}>
-                  <p>Sublet Match! The owner of sublet {match.listingId} wants to sublet to you.</p>
-                  <button>Contact</button>
-                </li>
-              ))}
+              {matches.map((match) => {
+                if (match.owner === auth.currentUser.uid){
+                  return <li key={match.key}>
+                          <p>Sublet Match! You have matched with user {match.requester} for your sublet {match.listingId}</p>
+                          <button>Contact</button>
+                        </li>
+                } else {
+                  return <li key={match.key}>
+                            <p>Sublet Match! The owner of sublet {match.listingId} wants to sublet to you.</p>
+                            <button>Contact</button>
+                          </li>
+                }
+              })}
             </ul>
             : <p>No matches</p>}
         </div>
