@@ -195,57 +195,43 @@ function Listing({ setListings }) {
         paddingBottom: "300px",
       }}
     >
-      <ul style={{ margin: 0, padding: 0 }}>
-        {listings.map((listing) => (
-          <li
-            key={listing.key}
-            style={{
-              padding: "15px",
-              borderBottom: "1px solid #eee",
-            }}
-          >
-            <h3>{listing.title || "No title"}</h3>
-            <p>
-              {listing.startDate} to {listing.endDate}
-            </p>
-            <p>Location: {listing.location || "Unknown"}</p>
-            <p>Price: ${listing.price || "?"}/month</p>
-            <p>{listing.description || "No description"}</p>
-
-            {pathname === "/" ? (
-              <button
-                onClick={() =>
-                  handleRequestMatch(listing.key, listing.createdBy)
-                }
+      {listings.length === 0 
+        ? <p>You have not made any sublet listings</p>
+        :<ul style={{ margin: 0, padding: 0 }}>
+            {listings.map((listing) => (
+              <li
+                key={listing.key}
+                style={{
+                  padding: "15px",
+                  borderBottom: "1px solid #eee",
+                }}
               >
-                Request Match
-              </button>
-            ) : pathname === "/profile" ? (
-              <button onClick={() => updateListing(listing)}>
-                Update Listing
-              </button>
-            ) : null}
-          </li>
-        ))}
-      </ul>
+                <h3>{listing.title || "No title"}</h3>
+                <p>
+                  {listing.startDate} to {listing.endDate}
+                </p>
+                <p>Location: {listing.location || "Unknown"}</p>
+                <p>Price: ${listing.price || "?"}/month</p>
+                <p>{listing.description || "No description"}</p>
+
+                {pathname === "/" ? (
+                  <button
+                    onClick={() =>
+                      handleRequestMatch(listing.key, listing.createdBy)
+                    }
+                  >
+                    Request Match
+                  </button>
+                ) : pathname === "/profile" ? (
+                  <button onClick={() => updateListing(listing)}>
+                    Update Listing
+                  </button>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        }
     </div>
-    // in case need 404 logic
-    //       {pathname === "/" ? (
-    //         <button
-    //           onClick={() => handleRequestMatch(listing.key, listing.createdBy)}
-    //         >
-    //           Request Match
-    //         </button>
-    //       ) : pathname === "/profile" ? (
-    //         <button onClick={() => updateListing(listing)}>
-    //           Update Listing
-    //         </button>
-    //       ) : (
-    //         <div>
-    //           <h1>404 - Listing Not needed On This Page</h1>
-    //           <h2>Replace with 404.html</h2>
-    //         </div>
-    //       )}
   );
 }
 
