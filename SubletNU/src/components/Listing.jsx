@@ -106,7 +106,7 @@ function Listing({ setListings }) {
       const newMatchRef = push(dbMatchRef);
       const newMatchKey = newMatchRef.key;
 
-      matchRequest[key] = newMatchKey;
+      matchRequest.key = newMatchKey;
       console.log(matchRequest);
 
       await set(newMatchRef, matchRequest);
