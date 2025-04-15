@@ -7,7 +7,8 @@ import { ref,
   update, 
   onValue, 
   get, 
-  onChildAdded } from "firebase/database";
+  onChildAdded,
+  onChildRemoved } from "firebase/database";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import Listing from "../components/Listing";
@@ -23,7 +24,7 @@ export default function ProfilePage() {
   const dbMatchReqRef = ref(db, 'users/' + auth.currentUser.uid + '/userMatchRequests');
   const dbMatchesRef = ref(db, 'users/' + auth.currentUser.uid + '/userMatches');
 
-  //  listen for match requests to approve or deny
+  //  listen for added match requests to approve or deny
   useEffect( () => {
     return onChildAdded(dbMatchReqRef, (snapshot) => {
       
@@ -45,8 +46,23 @@ export default function ProfilePage() {
 
   }, [dbMatchReqRef]);
 
+  // listen for removed requests
+  useEffect(() => {
+    return onChildRemoved(dbMatchReqRef, (snapshot) => {
+      // update matchRequests and matchRequestsIds
+      // by removing the child that got removed
+      if (snapshot.val()){
+        const data = snapshot.val();
+        removeIdFromList(data.key);
+        removeReqFromList(data.key);
+      };
+    });
+  }, [dbMatchReqRef]);
 
 
+
+  // listens for matches
+  // listen for matches (that have been sent back)
   useEffect(() => {
     // check if a child has been added, update local matches state
     return onChildAdded(dbMatchesRef, (snapshot) => {
@@ -57,9 +73,6 @@ export default function ProfilePage() {
 
       // check if matches already has this data
       // add it if it doesnt
-      // const newMatches = matches.filter(match => match.key !== data);
-      // setMatches([...matches, ...newMatches]);
-
 
       // get corresponding match request and display data
       const dbRef = ref(db,'matches/' + data);
@@ -88,7 +101,8 @@ export default function ProfilePage() {
     console.log("matches:", matches);
   }, [matchRequests]);
 
-  // listen for matches (that have been sent back)
+
+  
 
   const handleApproveMatch = async(matchObj) => {
     // change match approved to false
@@ -96,6 +110,7 @@ export default function ProfilePage() {
       approved: 'true'
     });
     alert("Match Request Approved. Sending user your contact email.");
+    matchObj.approved = true;
 
     // remove the request from the matches for both the requester and the requestee
     try{
@@ -116,10 +131,10 @@ export default function ProfilePage() {
           console.log("Value not found in match requests.");
         } else {
           // remove using index
-          console.log("Requester match request at index", idxOwner);
+          // console.log("Requester match request at index", idx);
           const removeRef = ref(db, 'users/' + matchObj.requester + '/userMatchRequests/' + idx);
           await remove(removeRef);
-          console.log("DB Match Request", matchObj.key, " at index",idx, "was removed for requester");
+          // console.log("DB Match Request", matchObj.key, " at index",idx, "was removed for requester");
         }
       }
 
@@ -139,10 +154,10 @@ export default function ProfilePage() {
           console.log("Value not found in match requests.");
         } else {
           // remove using index
-          console.log("Owner match request at index", idxOwner);
+          // console.log("Owner match request at index", idxOwner);
           const removeOwnerRef = ref(db, 'users/' + matchObj.owner + '/userMatchRequests/' + idxOwner);
           await remove(removeOwnerRef);
-          console.log("DB Match Request", matchObj.key, " at index",idx, "was removed for sublet owner (requestee)");
+          // console.log("DB Match Request", matchObj.key, " at index",idxOwner, "was removed for sublet owner (requestee)");
         }
       }
 
@@ -169,6 +184,7 @@ export default function ProfilePage() {
   const removeIdFromList = (key) => {
     setRequestIds(items => items.filter(item => item !== key));
   };
+  
 
   const removeReqFromList = (key) => {
     setRequests(items => items.filter(item => item.key !== key));
@@ -182,8 +198,14 @@ export default function ProfilePage() {
     // add this match to their db lists
     const subletMatchOwnerRef = push(dbSubletOwnerRef, matchObj.key)
     const subletMatchReqRef = push(dbSubletRequestorRef, matchObj.key);
-    console.log("push ref for owner (matches):",subletMatchOwnerRef);
-    console.log("push ref for request (matches):",subletMatchReqRef);
+    console.log("push ref for owner (matches):",subletMatchOwnerRef.key, "(", dbSubletOwnerRef);
+    console.log("push ref for request (matches):",subletMatchReqRef.key,"(", dbSubletRequestorRef);
+  };
+
+  const handleContactOwner = (match, isOwner) => {
+    // send an alert to the user with the sublet owners contact info
+    if (isOwner) alert("Here is your sublet requester's email: " + match.requesterContact);
+    else alert("Here is the sublet owners email: " + match.ownerContact);
   };
 
 
@@ -227,12 +249,12 @@ export default function ProfilePage() {
                 if (match.owner === auth.currentUser.uid){
                   return <li key={match.key}>
                           <p>Sublet Match! You have matched with user {match.requester} for your sublet {match.listingId}</p>
-                          <button>Contact</button>
+                          <button onClick={() => handleContactOwner(match, false)}>Contact</button>
                         </li>
                 } else {
                   return <li key={match.key}>
                             <p>Sublet Match! The owner of sublet {match.listingId} wants to sublet to you.</p>
-                            <button>Contact</button>
+                            <button onClick={() => handleContactOwner(match, true)}>Contact</button>
                           </li>
                 }
               })}

@@ -54,6 +54,7 @@ export default function CreateListingPage() {
         startDate,
         endDate,
         createdBy: auth.currentUser.uid,
+        contact: auth.currentUser.email,
         createdAt: new Date().toISOString(),
       }
 
