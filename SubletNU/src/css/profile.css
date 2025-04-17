@@ -1,39 +1,46 @@
-.profile-container {
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #f3f4f6;
-    font-family: 'Segoe UI', Roboto, sans-serif;
-}
-
-
-.profile-box {
+.profile-content {
+    flex: 1;
+    padding: 60px 40px;
     background-color: #f6efff;
-    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 24px;
+    overflow-y: auto;
+  }
+  
+  
+  .profile-box {
+    display: flex;
+    flex-direction: row;
+    width: 90%;
+    max-width: 1800px;
+    height: 80vh;
+    max-height: 700px;
     border-radius: 16px;
-    width: 400px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-    text-align: center;
-}
-
-
-.profile-title {
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    background-color: white;
+    box-sizing: border-box;
+  }
+  
+  
+  .profile-title {
     font-size: 24px;
     font-weight: 600;
     color: #1f2937;
     margin-bottom: 20px;
-}
-
-
-.profile-email {
+    text-align: center;
+  }
+  
+  .profile-email {
     font-size: 16px;
     color: #4b5563;
     margin-bottom: 30px;
-}
-
-
-.logout-button {
+    text-align: center;
+  }
+  
+  .logout-button {
     padding: 10px 20px;
     font-size: 15px;
     background-color: #000000;
@@ -42,8 +49,25 @@
     border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.2s ease;
-}
-
-.logout-button:hover {
+    margin-bottom: 24px;
+  }
+  
+  .logout-button:hover {
     background-color: #5b21b6;
-}
+  }
+  
+
+  @media (max-width: 768px) {
+    .profile-box {
+      padding: 20px;
+    }
+  
+    .profile-title {
+      font-size: 20px;
+    }
+  
+    .logout-button {
+      width: 100%;
+    }
+  }
+  

@@ -11,28 +11,25 @@ import {
   update,
 } from "firebase/database";
 import { useLocation } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
 
-
-function Listing({ setListings }) {
+function Listing({ setListings, showOnlyCurrentUser = false }) {
   const [listings, setLocalListings] = useState([]);
-  const [matchRequests, setMatchReq] = useState([]);
-  const [matches, setMatches] = useState([]);
   const pathLocation = useLocation();
   const pathname = pathLocation.pathname;
 
-  //
-  // if listing data exists, retrieve it and save the array to listings
-  //
+  // 🔁 Fetch listings from DB
   useEffect(() => {
-    const listingQuery =
-      pathname === "/profile"
-        ? query(
-            ref(db, "users/" + auth.currentUser.uid + "/userListings"),
-            orderByChild("createdAt")
-          )
-        : query(ref(db, "listings"), orderByChild("createdAt"));
-    // const listingQuery = query(ref(db, 'listings'), orderByChild("createdAt"));
+    let listingQuery;
+
+    if (showOnlyCurrentUser || pathname === "/profile") {
+      listingQuery = query(
+        ref(db, "users/" + auth.currentUser.uid + "/userListings"),
+        orderByChild("createdAt")
+      );
+    } else {
+      listingQuery = query(ref(db, "listings"), orderByChild("createdAt"));
+    }
+
     const unsubscribe = onValue(
       listingQuery,
       (snapshot) => {
@@ -40,61 +37,34 @@ function Listing({ setListings }) {
           const listingData = snapshot.val();
           const listingsArray = Object.entries(listingData).map(
             ([key, value]) => ({
-              key, // db listing unique key
+              key,
               ...value,
             })
           );
           setLocalListings(listingsArray);
           setListings(listingsArray);
         } else {
-          console.log("No data avilable");
+          setLocalListings([]);
+          setListings([]);
+          console.log("No listings found.");
         }
       },
       (error) => {
-        console.error("ERROR:" + error);
+        console.error("ERROR loading listings:", error);
       }
     );
 
+    return () => unsubscribe();
+  }, [pathname, setListings, showOnlyCurrentUser]);
 
-    return () => {
-      unsubscribe();
-    };
-  }, [pathname, setListings]); // make it empty so it runs only once (?)
-
-
-
-  //
-  // Update listings
-  //
-  // if the listing belongs to the user they can update its db entry
-  //
-  const updateListing = (listing) => {
-    // TODO
-    // link to createlistingPage
-    // extend that component page to handle an update
-  };
-
-
-
-
-  //
-  // Handle match request
-  //
-  // allows a user to send a match request to the owner of a listing
-  //
-  // if current user is not the user who made the listing,
-  // logs a matchRequest into the database
+  // 🔁 Request a match
   const handleRequestMatch = async (listingId, owner, ownerContact) => {
     try {
       if (owner === auth.currentUser.uid) {
-        // cant match with your own listing
-        alert(
-          "This user owns this listing. Can't match with a listing you own!"
-        );
+        alert("You can't match with your own listing!");
         return;
       }
 
-      // construct match request
       const matchRequest = {
         listingId,
         requester: auth.currentUser.uid,
@@ -105,75 +75,36 @@ function Listing({ setListings }) {
         approved: false,
       };
 
-      // check if match already exists, if it does return
-
-      // add match to matches
-
-      const dbMatchRef = ref(db, "matches");
-      const newMatchRef = push(dbMatchRef);
-      const newMatchKey = newMatchRef.key;
-
-      matchRequest.key = newMatchKey;
-      console.log(matchRequest);
-
+      const newMatchRef = push(ref(db, "matches"));
+      const matchKey = newMatchRef.key;
+      matchRequest.key = matchKey;
       await set(newMatchRef, matchRequest);
 
-      // add matchid to owner and requestor's userMatchRequests Array
+      // update user matchRequest references
       const updates = {};
-      const ownerMatchReqRef = ref(
-        db,
-        "/users/" + owner + "/userMatchRequests"
-      );
-      const userMatchReqRef = ref(
-        db,
-        "/users/" + auth.currentUser.uid + "/userMatchRequests"
-      );
 
-      // get the current lists
-      const sanpshotOwner = await get(ownerMatchReqRef);
-      const sanpshotUser = await get(userMatchReqRef);
+      const ownerRef = ref(db, "users/" + owner + "/userMatchRequests");
+      const requesterRef = ref(db, "users/" + auth.currentUser.uid + "/userMatchRequests");
 
-      // update owners matchid list
-      let currMatchReqsOwner = [];
-      if (sanpshotOwner.exists()) {
-        currMatchReqsOwner = sanpshotOwner.val();
+      const [ownerSnap, requesterSnap] = await Promise.all([
+        get(ownerRef),
+        get(requesterRef)
+      ]);
+
+      const ownerList = ownerSnap.exists() ? ownerSnap.val() : [];
+      const requesterList = requesterSnap.exists() ? requesterSnap.val() : [];
+
+      if (!ownerList.includes(matchKey)) {
+        ownerList.push(matchKey);
+        updates["/users/" + owner + "/userMatchRequests"] = ownerList;
       }
 
-      if (!currMatchReqsOwner) {
-        // list empty, create new list
-        currMatchReqsOwner = [newMatchKey];
-      } else if (!currMatchReqsOwner.includes(newMatchKey)) {
-        // list exists, add the matchKey
-        currMatchReqsOwner.push(newMatchKey);
-
-        // add it to the updates object to update later
-        updates["/users/" + owner + "/userMatchRequests"] = currMatchReqsOwner;
+      if (!requesterList.includes(matchKey)) {
+        requesterList.push(matchKey);
+        updates["/users/" + auth.currentUser.uid + "/userMatchRequests"] = requesterList;
       }
 
-      // update requestors/users matchreq list
-      let currMatchReqsUser = [];
-      if (sanpshotUser.exists()) {
-        currMatchReqsUser = sanpshotUser.val();
-      }
-
-      if (!currMatchReqsUser) {
-        // list empty, create new list
-        currMatchReqsUser = [newMatchKey];
-      } else if (!currMatchReqsUser.includes(newMatchKey)) {
-        // list exists, add the matchKey
-        currMatchReqsUser.push(newMatchKey);
-
-        // add it to the updates object to update later
-        updates["/users/" + auth.currentUser.uid + "/userMatchRequests"] =
-          currMatchReqsUser;
-      }
-
-      // handle the updates
       await update(ref(db), updates);
-
-      console.log("Match request added to user successfully.");
-      // send notification/alert to listing owner
-      // may not need to since it automatically updates
 
       alert("Match request sent!");
     } catch (error) {
@@ -181,13 +112,12 @@ function Listing({ setListings }) {
     }
   };
 
-  //
-  // handleMatchChecking
-  //
-  // for each users' listing, checks for all pending matches and sends
+  const updateListing = (listing) => {
+    alert("Listing update coming soon! ID: " + listing.key);
+    // Optional: Redirect to edit page or open form
+  };
 
-  // if route is homepage: button is to start a match request
-  // if route is profile: button is to update the listing
+  // 🔽 UI
   return (
     <div
       style={{
@@ -197,42 +127,47 @@ function Listing({ setListings }) {
         paddingBottom: "300px",
       }}
     >
-      {listings.length === 0 
-        ? <p>You have not made any sublet listings</p>
-        :<ul style={{ margin: 0, padding: 0 }}>
-            {listings.map((listing) => (
-              <li
-                key={listing.key}
-                style={{
-                  padding: "15px",
-                  borderBottom: "1px solid #eee",
-                }}
-              >
-                <h3>{listing.title || "No title"}</h3>
-                <p>
-                  {listing.startDate} to {listing.endDate}
-                </p>
-                <p>Location: {listing.location || "Unknown"}</p>
-                <p>Price: ${listing.price || "?"}/month</p>
-                <p>{listing.description || "No description"}</p>
+      {listings.length === 0 ? (
+        <p>No listings found.</p>
+      ) : (
+        <ul style={{ margin: 0, padding: 0 }}>
+          {listings.map((listing) => (
+            <li
+              key={listing.key}
+              style={{
+                padding: "15px",
+                borderBottom: "1px solid #eee",
+              }}
+            >
+              <h3>{listing.title || "No title"}</h3>
+              <p>
+                {listing.startDate} to {listing.endDate}
+              </p>
+              <p>Location: {listing.location || "Unknown"}</p>
+              <p>Price: ${listing.price || "?"}/month</p>
+              <p>{listing.description || "No description"}</p>
 
-                {pathname === "/" ? (
-                  <button
-                    onClick={() =>
-                      handleRequestMatch(listing.key, listing.createdBy, listing.contact)
-                    }
-                  >
-                    Request Match
-                  </button>
-                ) : pathname === "/profile" ? (
-                  <button onClick={() => updateListing(listing)}>
-                    Update Listing
-                  </button>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        }
+              {pathname === "/" ? (
+                <button
+                  onClick={() =>
+                    handleRequestMatch(
+                      listing.key,
+                      listing.createdBy,
+                      listing.contact
+                    )
+                  }
+                >
+                  Request Match
+                </button>
+              ) : pathname === "/profile" || showOnlyCurrentUser ? (
+                <button onClick={() => updateListing(listing)}>
+                  Update Listing
+                </button>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

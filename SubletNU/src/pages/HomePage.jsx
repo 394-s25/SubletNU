@@ -1,24 +1,71 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-
+import { useNavigate } from "react-router-dom";
 import Listing from "../components/Listing";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import "leaflet/dist/leaflet.css"; // 引入样式
-import "../css/home.css"; //
+import PageWrapper from "../components/PageWrapper";
+import CreateListingModal from "../components/CreateListingModel";
+import LeafletMapBox from "../components/LeafletMapBox";
+import "../css/home.css";
 
 export default function HomePage() {
   const [filter, setFilter] = useState("");
   const [listings, setListings] = useState([]);
+  const [mapMarkers, setMapMarkers] = useState([]);
+  const [showAllListings, setShowAllListings] = useState(true);
+  const [showUserListings, setShowUserListings] = useState(false);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
 
-  // check for lat and lng in listings
-  const filteredListings = listings.filter((listing) => listing.lat && listing.lng);
+  const filteredListings = listings.filter(
+    (listing) =>
+      listing.location?.toLowerCase().includes(filter.toLowerCase())
+  );
+
+  useEffect(() => {
+    const fetchCoordinates = async () => {
+      const results = [];
+      for (const listing of listings) {
+        if (!listing.location) continue;
+        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+          listing.location
+        )}&format=json&limit=1`;
+        try {
+          const res = await fetch(url, {
+            headers: {
+              'User-Agent': 'sublet-nu-app/1.0 (minxin@northwestern.edu)',
+            },
+          });
+          const data = await res.json();
+          if (data.length > 0) {
+            results.push({
+              lat: parseFloat(data[0].lat),
+              lng: parseFloat(data[0].lon),
+              ...listing,
+            });
+          }
+        } catch (err) {
+          console.error("Geocode failed for:", listing.location, err);
+        }
+      }
+      setMapMarkers(results);
+    };
+
+    if (listings.length > 0) fetchCoordinates();
+  }, [listings]);
 
   return (
-    <div className="home-container">
-      <div className="home-box">
+    <PageWrapper
+      onShowAll={() => {
+        setShowAllListings(true);
+        setShowUserListings(false);
+      }}
+      onShowUser={() => {
+        setShowAllListings(false);
+        setShowUserListings(true);
+      }}
+      onCreateNew={() => setIsCreateOpen(true)}
+    >
+      <div className="home-layout">
         <div className="home-left">
           <h2 className="home-title">Sublet Listings</h2>
-
           <input
             type="text"
             placeholder="Filter by location"
@@ -27,41 +74,21 @@ export default function HomePage() {
             className="home-input"
           />
 
-          <div className="home-links">
-            <Link to="/create-listing">Create New Listing</Link>
-            <br />
-            <Link to="/profile">View Profile</Link>
-          </div>
-          <div>
-              <Listing setListings={setListings}/>
-          </div>
+          {showAllListings && (
+            <Listing setListings={setListings} />
+          )}
+
+          {showUserListings && (
+            <Listing setListings={setListings} showOnlyCurrentUser={true} />
+          )}
         </div>
 
-        <div className="home-right">
-          <MapContainer
-            center={[42.055984, -87.675171]}
-            zoom={15}
-            style={{ width: "100%", height: "100%" }}
-          >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            {filteredListings.map((listing) => (
-              <Marker
-                key={listing.key}
-                position={[listing.lat || 41.8781, listing.lng || -87.6298]} // 👈 你需要在数据库里加 lat/lng 字段
-              >
-                <Popup>
-                  <strong>{listing.title}</strong>
-                  <br />
-                  {listing.location}
-                </Popup>
-              </Marker>
-            ))}
-          </MapContainer>
+        <div className="home-map-container">
+          <LeafletMapBox listings={mapMarkers} />
         </div>
       </div>
-    </div>
+
+      <CreateListingModal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} />
+    </PageWrapper>
   );
 }

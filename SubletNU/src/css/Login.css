@@ -1,16 +1,21 @@
 .outer-container {
-  height: 100vh;
+  min-height: 100vh;
+  padding: 20px;
   display: flex;
   justify-content: center;
   align-items: center;
   background-color: #f4f4f4;
+  box-sizing: border-box;
 }
 
 
 .login-box {
   display: flex;
-  width: 900px;
-  height: 500px;
+  flex-direction: row;
+  width: 90%;
+  max-width: 1800px;
+  height: 80vh;
+  max-height: 700px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
   border-radius: 16px;
   overflow: hidden;
@@ -21,21 +26,29 @@
 .login-left {
   flex: 1;
   background-color: #f6efff;
-  /* purple */
   padding: 60px 40px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  text-align: center;
+  box-sizing: border-box;
 }
+
 
 .login-title {
   font-size: 22px;
   font-weight: 700;
   margin-bottom: 30px;
-  text-align: center;
   color: #333;
+  max-width: 100%;
+
+
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
+
 
 .login-button {
   display: flex;
@@ -68,4 +81,31 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+
+@media (max-width: 768px) {
+  .login-box {
+    flex-direction: column;
+    width: 95vw;
+    height: auto;
+    max-height: none;
+  }
+
+  .login-left,
+  .login-right {
+    flex: none;
+    width: 100%;
+    height: auto;
+  }
+
+  .login-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+  }
+
+  .login-title {
+    font-size: 18px;
+  }
 }
