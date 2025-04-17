@@ -135,7 +135,7 @@ function Listing({ setListings, showOnlyCurrentUser = false }) {
             <li
               key={listing.key}
               style={{
-                padding: "15px",
+                padding: "10px",
                 borderBottom: "1px solid #eee",
               }}
             >

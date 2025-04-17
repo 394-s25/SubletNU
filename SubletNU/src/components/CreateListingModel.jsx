@@ -30,6 +30,22 @@ export default function CreateListingModal({ isOpen, onClose }) {
     }
 
     try {
+      // Fetch geolocation from Nominatim
+      const geoUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(location)}&format=json&limit=1`;
+      const geoRes = await fetch(geoUrl, {
+        headers: {
+          'User-Agent': 'sublet-nu-app/1.0 (minxin@northwestern.edu)',
+        },
+      });
+      const geoData = await geoRes.json();
+      if (!geoData || geoData.length === 0) {
+        alert("Could not locate the address. Please double-check and try again.");
+        return;
+      }
+
+      const lat = parseFloat(geoData[0].lat);
+      const lng = parseFloat(geoData[0].lon);
+
       const newListing = {
         title,
         description,
@@ -37,6 +53,8 @@ export default function CreateListingModal({ isOpen, onClose }) {
         price,
         startDate,
         endDate,
+        lat,
+        lng,
         createdBy: auth.currentUser.uid,
         contact: auth.currentUser.email,
         createdAt: new Date().toISOString(),

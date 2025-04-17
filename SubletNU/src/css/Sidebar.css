@@ -1,45 +1,58 @@
+/* 默认 sidebar 样式（桌面） */
 .sidebar {
-    display: flex;
+  width: 220px;
+  min-width: 200px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background-color: white;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  margin-right: 24px;
+  box-sizing: border-box;
+}
+
+/* 按钮样式 */
+.sidebar button {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 15px;
+  background-color: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.sidebar button:hover {
+  background-color: #e5e7eb;
+}
+
+/* 小屏优化：小于 1000px 或竖屏时横排展示 */
+@media (max-width: 1000px), (orientation: portrait) {
+  .page-container {
     flex-direction: column;
-    gap: 12px;
-    padding: 20px;
-    background-color: #f6efff;
-    border-radius: 12px;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
-    max-width: 240px;
-    margin-right: 20px;
-    height: fit-content;
-    box-sizing: border-box;
+    align-items: center;
   }
-  
-  .sidebar button {
+
+  .sidebar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 0 0 24px 0;
     width: 100%;
-    padding: 12px 16px;
-    font-size: 15px;
-    background-color: white;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: background-color 0.2s ease;
+    max-width: 100%;
+    border-radius: 12px;
+    gap: 12px;
   }
-  
-  .sidebar button:hover {
-    background-color: #e5e7eb;
+
+  .sidebar button {
+    flex: 1 1 45%;
+    max-width: 180px;
+    font-size: 14px;
+    padding: 10px 12px;
   }
-  
-  @media (max-width: 768px) {
-    .sidebar {
-      flex-direction: row;
-      flex-wrap: wrap;
-      justify-content: center;
-      max-width: 100%;
-      margin: 0 0 20px 0;
-    }
-  
-    .sidebar button {
-      flex: 1 1 45%;
-      margin: 6px;
-    }
-  }
-  
+}

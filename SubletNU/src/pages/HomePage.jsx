@@ -4,6 +4,8 @@ import Listing from "../components/Listing";
 import PageWrapper from "../components/PageWrapper";
 import CreateListingModal from "../components/CreateListingModel";
 import LeafletMapBox from "../components/LeafletMapBox";
+import { db } from "../firebase";
+import { ref, get } from "firebase/database"; // ✅ 使用 get 而非 onValue
 import "../css/home.css";
 
 export default function HomePage() {
@@ -20,36 +22,35 @@ export default function HomePage() {
   );
 
   useEffect(() => {
-    const fetchCoordinates = async () => {
-      const results = [];
-      for (const listing of listings) {
-        if (!listing.location) continue;
-        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
-          listing.location
-        )}&format=json&limit=1`;
-        try {
-          const res = await fetch(url, {
-            headers: {
-              'User-Agent': 'sublet-nu-app/1.0 (minxin@northwestern.edu)',
-            },
-          });
-          const data = await res.json();
-          if (data.length > 0) {
-            results.push({
-              lat: parseFloat(data[0].lat),
-              lng: parseFloat(data[0].lon),
-              ...listing,
-            });
-          }
-        } catch (err) {
-          console.error("Geocode failed for:", listing.location, err);
+    const fetchListings = async () => {
+      try {
+        const snapshot = await get(ref(db, "/listings"));
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          const listingsArray = Object.entries(data).map(([key, value]) => ({
+            key,
+            ...value,
+          }));
+          setListings(listingsArray);
+
+          const markers = listingsArray
+            .filter((l) => l.lat && l.lng)
+            .map((l) => ({
+              lat: parseFloat(l.lat),
+              lng: parseFloat(l.lng),
+              ...l,
+            }));
+          setMapMarkers(markers);
+        } else {
+          console.warn("No listings found.");
         }
+      } catch (err) {
+        console.error("Failed to fetch listings:", err);
       }
-      setMapMarkers(results);
     };
 
-    if (listings.length > 0) fetchCoordinates();
-  }, [listings]);
+    fetchListings(); // ✅ 只执行一次
+  }, []);
 
   return (
     <PageWrapper
@@ -84,11 +85,23 @@ export default function HomePage() {
         </div>
 
         <div className="home-map-container">
-          <LeafletMapBox listings={mapMarkers} />
+
+
+
+
+          <LeafletMapBox
+            listings={mapMarkers.filter((l) =>
+              l.location?.toLowerCase().includes(filter.toLowerCase())
+
+            )}
+          />
         </div>
       </div>
 
-      <CreateListingModal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} />
+      <CreateListingModal
+        isOpen={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+      />
     </PageWrapper>
   );
 }

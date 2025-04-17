@@ -1,14 +1,11 @@
-/* 外部容器 */
 .home-container {
-    min-height: 100vh;
-    padding: 20px;
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-start;
-    align-items: flex-start;
-    background-color: #f4f4f8;
-    flex-wrap: wrap;
-  }
+  height: 100vh;         /* 替代 min-height */
+  box-sizing: border-box; /* 确保 padding 被包含在高度中 */
+  padding: 20px;
+  overflow: hidden;       /* 可选：防止多余滚动条 */
+  
+}
+
   
   /* 地图容器 */
   .leaflet-container {
@@ -30,24 +27,37 @@
   }
   
   
-  /* 左侧内容区 */
+  .page-box {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    height: auto; /* ✅ 不要固定高度 */
+    max-height: none;
+  }
+  
   .home-left {
     flex: 1;
-    padding: 40px;
     background-color: #f6efff;
     display: flex;
     flex-direction: column;
     gap: 24px;
-    box-sizing: border-box;
-    overflow-y: auto;
+
+
   }
   
-  /* 右侧地图容器 */
   .home-map-container {
     flex: 1;
-    height: 100%;
-    position: relative;
+    height: auto;               /* ✅ 与左侧高度保持一致 */
+    min-height: 400px;
   }
+  
+  
+  @media (max-width: 768px) {
+    .home-map-container {
+      min-height: 300px; /* 小屏更小 */
+    }
+  }
+  
   
   /* 标题 */
   .home-title {
