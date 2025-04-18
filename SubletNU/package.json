@@ -11,8 +11,10 @@
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@react-google-maps/api": "^2.20.6",
     "firebase": "^11.6.0",
     "leaflet": "^1.9.4",
+    "node-fetch": "^2.7.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-leaflet": "^5.0.0",

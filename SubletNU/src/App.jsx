@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage";
-import CreateListingPage from "./pages/CreateListingPage";
+import CreateListingModal from "./components/CreateListingModel"; 
 import ProfilePage from "./pages/ProfilePage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -24,7 +24,7 @@ function App() {
             path="/create-listing"
             element={
               <ProtectedRoute>
-                <CreateListingPage />
+                <CreateListingModal />
               </ProtectedRoute>
             }
           />
