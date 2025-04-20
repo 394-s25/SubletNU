@@ -69,14 +69,14 @@ export default function HomePage() {
           <h2 className="home-title">Sublet Listings</h2>
           <input
             type="text"
-            placeholder="Filter by location"
+            placeholder="Search listing by keywords"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             className="home-input"
           />
 
           {showAllListings && (
-            <Listing setListings={setListings} />
+            <Listing setListings={setListings} filter={filter}/>
           )}
 
           {showUserListings && (

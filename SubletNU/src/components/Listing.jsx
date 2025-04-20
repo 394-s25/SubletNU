@@ -12,7 +12,7 @@ import {
 } from "firebase/database";
 import { useLocation } from "react-router-dom";
 
-function Listing({ setListings, showOnlyCurrentUser = false }) {
+function Listing({ setListings, filter, showOnlyCurrentUser = false }) {
   const [listings, setLocalListings] = useState([]);
   const pathLocation = useLocation();
   const pathname = pathLocation.pathname;
@@ -117,6 +117,15 @@ function Listing({ setListings, showOnlyCurrentUser = false }) {
     // Optional: Redirect to edit page or open form
   };
 
+
+  // console.log("Listings", listings); // 👈 This prints the key
+  const filteredListings = listings.filter((listing) =>
+    Object.values(listing).some((value) =>
+      String(value).toLowerCase().includes(filter.toLowerCase())
+    )
+  );
+
+
   // 🔽 UI
   return (
     <div
@@ -131,7 +140,7 @@ function Listing({ setListings, showOnlyCurrentUser = false }) {
         <p>No listings found.</p>
       ) : (
         <ul style={{ margin: 0, padding: 0 }}>
-          {listings.map((listing) => (
+          {filteredListings.map((listing) => (
             <li
               key={listing.key}
               style={{
