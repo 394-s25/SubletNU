@@ -16,7 +16,8 @@ export default function CreateListingModal({ isOpen, onClose }) {
 
   const handleLocationChange = (e) => {
     const currLocation = e.target.value;
-    const addressRegex = /^[0-9]+\s[A-Za-z0-9\s]+\s[A-Za-z\s]+\s[A-Za-z]{2}\s[0-9]{5}$/;
+    // const addressRegex = /^[0-9]+\s[A-Za-z0-9\s]+\s[A-Za-z\s]+\s[A-Za-z]{2}\s[0-9]{5}$/;
+    const addressRegex = /^\d+\s+[\w\s.]+,?\s+[\w\s.]+,?\s+[A-Z]{2}\s+\d{5}$/;
     setLocation(currLocation);
     setIsLocValid(addressRegex.test(currLocation));
   };
@@ -24,7 +25,7 @@ export default function CreateListingModal({ isOpen, onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isLocValid) {
-      setLocation("");
+      // setLocation("");
       alert("Please enter a valid address (e.g. 633 Clark St Evanston IL 60208)");
       return;
     }
@@ -87,7 +88,7 @@ export default function CreateListingModal({ isOpen, onClose }) {
           <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} min={startDate} required />
           <textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} required />
           <input type="text" placeholder="633 Clark St Evanston IL 60208" value={location} onChange={handleLocationChange} required />
-          <input type="number" placeholder="Price" value={price} onChange={(e) => setPrice(e.target.value)} required />
+          <input type="number" placeholder="Price" value={price} min="0" onChange={(e) => setPrice(e.target.value)} required />
           <button type="submit">Post Listing</button>
         </form>
       </div>

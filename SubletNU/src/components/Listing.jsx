@@ -60,10 +60,24 @@ function Listing({ setListings, showOnlyCurrentUser = false }) {
   // 🔁 Request a match
   const handleRequestMatch = async (listingId, owner, ownerContact) => {
     try {
+      console.log("inputs:", listingId, owner, ownerContact);
+      // sublet owner can't request their own sublet
       if (owner === auth.currentUser.uid) {
         alert("You can't match with your own listing!");
         return;
       }
+
+      // check if this match has been requested before
+      // it has been requested before if, there exists a matchRequest under 
+      //    this user that has this listingId
+
+      const requesterRef = ref(db, "users/" + auth.currentUser.uid + "/userMatchRequests");
+      // const reqSnap = new Promise(get(reqRef));
+      const [requesterSnap] = await Promise.all([get(requesterRef)])
+      const requesterList = requesterSnap.exists() ? requesterSnap.val() : [];
+      // get the corresponding match
+
+
 
       const matchRequest = {
         listingId,
@@ -84,15 +98,17 @@ function Listing({ setListings, showOnlyCurrentUser = false }) {
       const updates = {};
 
       const ownerRef = ref(db, "users/" + owner + "/userMatchRequests");
-      const requesterRef = ref(db, "users/" + auth.currentUser.uid + "/userMatchRequests");
+      // const requesterRef = ref(db, "users/" + auth.currentUser.uid + "/userMatchRequests");
 
-      const [ownerSnap, requesterSnap] = await Promise.all([
-        get(ownerRef),
-        get(requesterRef)
-      ]);
+      const [ownerSnap] = await Promise.all([get(ownerRef)]);
+      // const [ownerSnap, requesterSnap] = await Promise.all([
+      //   get(ownerRef),
+      //   get(requesterRef)
+      // ]);
 
       const ownerList = ownerSnap.exists() ? ownerSnap.val() : [];
-      const requesterList = requesterSnap.exists() ? requesterSnap.val() : [];
+      // const requesterList = requesterSnap.exists() ? requesterSnap.val() : [];
+
 
       if (!ownerList.includes(matchKey)) {
         ownerList.push(matchKey);
@@ -101,10 +117,12 @@ function Listing({ setListings, showOnlyCurrentUser = false }) {
 
       if (!requesterList.includes(matchKey)) {
         requesterList.push(matchKey);
+        // requesterList.push(listingId);
         updates["/users/" + auth.currentUser.uid + "/userMatchRequests"] = requesterList;
       }
 
       await update(ref(db), updates);
+      console.log("New match request sent:",matchKey);
 
       alert("Match request sent!");
     } catch (error) {

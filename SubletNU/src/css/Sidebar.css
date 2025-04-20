@@ -31,6 +31,10 @@
   background-color: #e5e7eb;
 }
 
+.sidebar button:focus {
+  background-color: #cccdcf;
+}
+
 /* 小屏优化：小于 1000px 或竖屏时横排展示 */
 @media (max-width: 1000px), (orientation: portrait) {
   .page-container {

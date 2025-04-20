@@ -141,12 +141,12 @@ export default function ProfilePage() {
               {match.owner === auth.currentUser.uid ? (
                 <>
                   <p>You matched with {match.requester} for listing {match.listingId}</p>
-                  <button onClick={() => handleContactOwner(match, false)}>Contact</button>
+                  <button onClick={() => handleContactOwner(match, true)}>Contact</button>
                 </>
               ) : (
                 <>
                   <p>Owner of listing {match.listingId} accepted your match</p>
-                  <button onClick={() => handleContactOwner(match, true)}>Contact</button>
+                  <button onClick={() => handleContactOwner(match, false)}>Contact</button>
                 </>
               )}
             </li>

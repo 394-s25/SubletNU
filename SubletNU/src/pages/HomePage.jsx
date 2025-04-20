@@ -15,11 +15,17 @@ export default function HomePage() {
   const [showAllListings, setShowAllListings] = useState(true);
   const [showUserListings, setShowUserListings] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [selectedMarker, setSelectedMarker] = useState({}); 
+  // ^to be used for filtering so user can see the listing they've just selected
 
   const filteredListings = listings.filter(
     (listing) =>
       listing.location?.toLowerCase().includes(filter.toLowerCase())
   );
+
+  useEffect(() => {
+    console.log("Home page selected marker:", selectedMarker);
+  },[selectedMarker]);
 
   useEffect(() => {
     const fetchListings = async () => {
@@ -90,9 +96,9 @@ export default function HomePage() {
 
 
           <LeafletMapBox
+            setSelectedMarker={setSelectedMarker}
             listings={mapMarkers.filter((l) =>
               l.location?.toLowerCase().includes(filter.toLowerCase())
-
             )}
           />
         </div>
