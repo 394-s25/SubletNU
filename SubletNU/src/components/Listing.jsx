@@ -84,11 +84,14 @@ function Listing({ setListings, filter, showOnlyCurrentUser = false }) {
       const updates = {};
 
       const ownerRef = ref(db, "users/" + owner + "/userMatchRequests");
-      const requesterRef = ref(db, "users/" + auth.currentUser.uid + "/userMatchRequests");
+      const requesterRef = ref(
+        db,
+        "users/" + auth.currentUser.uid + "/userMatchRequests"
+      );
 
       const [ownerSnap, requesterSnap] = await Promise.all([
         get(ownerRef),
-        get(requesterRef)
+        get(requesterRef),
       ]);
 
       const ownerList = ownerSnap.exists() ? ownerSnap.val() : [];
@@ -101,7 +104,8 @@ function Listing({ setListings, filter, showOnlyCurrentUser = false }) {
 
       if (!requesterList.includes(matchKey)) {
         requesterList.push(matchKey);
-        updates["/users/" + auth.currentUser.uid + "/userMatchRequests"] = requesterList;
+        updates["/users/" + auth.currentUser.uid + "/userMatchRequests"] =
+          requesterList;
       }
 
       await update(ref(db), updates);
@@ -117,14 +121,17 @@ function Listing({ setListings, filter, showOnlyCurrentUser = false }) {
     // Optional: Redirect to edit page or open form
   };
 
-
   // console.log("Listings", listings); // 👈 This prints the key
-  const filteredListings = listings.filter((listing) =>
-    Object.values(listing).some((value) =>
-      String(value).toLowerCase().includes(filter.toLowerCase())
-    )
-  );
+  const safeFilter = filter?.toLowerCase() || "";
 
+  const filteredListings = listings.filter((listing) =>
+    Object.values(listing).some((value) => {
+      if (typeof value === "string" || typeof value === "number") {
+        return value.toString().toLowerCase().includes(safeFilter);
+      }
+      return false;
+    })
+  );
 
   // 🔽 UI
   return (
