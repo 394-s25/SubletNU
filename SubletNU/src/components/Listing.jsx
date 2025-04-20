@@ -124,14 +124,19 @@ function Listing({ setListings, filter, showOnlyCurrentUser = false }) {
   // console.log("Listings", listings); // 👈 This prints the key
   const safeFilter = filter?.toLowerCase() || "";
 
-  const filteredListings = listings.filter((listing) =>
-    Object.values(listing).some((value) => {
+  const filteredListings = listings.filter((listing) => {
+    // skip own listings
+    if (!showOnlyCurrentUser && listing.createdBy === auth.currentUser?.uid) {
+      return false;
+    }
+
+    return Object.values(listing).some((value) => {
       if (typeof value === "string" || typeof value === "number") {
         return value.toString().toLowerCase().includes(safeFilter);
       }
       return false;
-    })
-  );
+    });
+  });
 
   // 🔽 UI
   return (
@@ -163,7 +168,7 @@ function Listing({ setListings, filter, showOnlyCurrentUser = false }) {
               <p>Price: ${listing.price || "?"}/month</p>
               <p>{listing.description || "No description"}</p>
 
-              {pathname === "/" ? (
+              {pathname === "/" && !showOnlyCurrentUser ? (
                 <button
                   onClick={() =>
                     handleRequestMatch(
