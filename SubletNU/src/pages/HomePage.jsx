@@ -5,7 +5,7 @@ import PageWrapper from "../components/PageWrapper";
 import CreateListingModal from "../components/CreateListingModel";
 import LeafletMapBox from "../components/LeafletMapBox";
 import { db } from "../firebase";
-import { ref, get } from "firebase/database"; // ✅ 使用 get 而非 onValue
+import { ref, get } from "firebase/database"; 
 import "../css/home.css";
 
 export default function HomePage() {
@@ -49,7 +49,7 @@ export default function HomePage() {
       }
     };
 
-    fetchListings(); // ✅ 只执行一次
+    fetchListings(); 
   }, []);
 
   return (
