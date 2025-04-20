@@ -12,7 +12,7 @@ export default function CreateListingModal({ isOpen, onClose }) {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  if (!isOpen) return null; // 👈 不显示时返回 null
+  if (!isOpen) return null;
 
   const handleLocationChange = (e) => {
     const currLocation = e.target.value;
@@ -68,7 +68,7 @@ export default function CreateListingModal({ isOpen, onClose }) {
 
       await update(ref(db), updates);
       alert("Listing posted successfully!");
-      onClose(); // 👈 提交成功后关闭弹窗
+      onClose();
     } catch (error) {
       console.error("Error posting listing:", error);
     }

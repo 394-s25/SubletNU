@@ -1,6 +1,6 @@
 import React from "react";
 import Sidebar from "./Sidebar";
-import "../css/page-wrapper.css"; // 新建的样式文件
+import "../css/page-wrapper.css";
 
 export default function PageWrapper({ children, onShowAll, onShowUser, onCreateNew }) {
   return (
