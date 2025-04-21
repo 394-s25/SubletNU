@@ -131,6 +131,7 @@ export default function CreateListingModal({ isOpen, onClose }) {
             placeholder="Monthly Price"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
+            min={0}
             required
           />
           <button type="submit">Post Listing</button>
