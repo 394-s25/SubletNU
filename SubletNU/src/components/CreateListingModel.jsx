@@ -16,8 +16,7 @@ export default function CreateListingModal({ isOpen, onClose }) {
 
   const handleLocationChange = (e) => {
     const currLocation = e.target.value;
-    const addressRegex =
-      /^[0-9]+\s[A-Za-z0-9\s]+\s[A-Za-z\s]+\s[A-Za-z]{2}\s[0-9]{5}$/;
+    const addressRegex = /^.+,\s*\d+\s+.+,\s*.+,\s*[A-Za-z]{2}\s*\d{5}$/;
     setLocation(currLocation);
     setIsLocValid(addressRegex.test(currLocation));
   };
@@ -131,8 +130,11 @@ export default function CreateListingModal({ isOpen, onClose }) {
             placeholder="Monthly Price"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
+            min="0"
             required
           />
+
+
           <button type="submit">Post Listing</button>
         </form>
       </div>
