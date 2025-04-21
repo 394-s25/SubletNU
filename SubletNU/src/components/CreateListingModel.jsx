@@ -16,7 +16,8 @@ export default function CreateListingModal({ isOpen, onClose }) {
 
   const handleLocationChange = (e) => {
     const currLocation = e.target.value;
-    const addressRegex = /^.+,\s*\d+\s+.+,\s*.+,\s*[A-Za-z]{2}\s*\d{5}$/;
+    const addressRegex = /^.+,?\s*\d+\s+.+,?\s*.+,?\s*[A-Za-z]{2}\s*\d{5}$/;
+
     setLocation(currLocation);
     setIsLocValid(addressRegex.test(currLocation));
   };
