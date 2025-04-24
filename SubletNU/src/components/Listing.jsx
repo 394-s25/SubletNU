@@ -12,7 +12,7 @@ import {
 } from "firebase/database";
 import { useLocation } from "react-router-dom";
 
-function Listing({ setListings, showOnlyCurrentUser = false }) {
+function Listing({ setListings, setAlertModal, setAlertModalMessage, showOnlyCurrentUser = false }) {
   const [listings, setLocalListings] = useState([]);
   const pathLocation = useLocation();
   const pathname = pathLocation.pathname;
@@ -58,12 +58,17 @@ function Listing({ setListings, showOnlyCurrentUser = false }) {
   }, [pathname, setListings, showOnlyCurrentUser]);
 
   // 🔁 Request a match
-  const handleRequestMatch = async (listingId, owner, ownerContact) => {
+  const handleRequestMatch = async (listing) => {
     try {
-      console.log("inputs:", listingId, owner, ownerContact);
+      const owner = listing.createdBy;
+      const listingId = listing.key;
+      const ownerContact = listing.contact;
+      const listingLoc = listing.location;
+      const listingTitle = listing.title;
       // sublet owner can't request their own sublet
       if (owner === auth.currentUser.uid) {
-        alert("You can't match with your own listing!");
+        setAlertModalMessage("You can't match with your own listing!");
+        setAlertModal(true);
         return;
       }
 
@@ -72,15 +77,31 @@ function Listing({ setListings, showOnlyCurrentUser = false }) {
       //    this user that has this listingId
 
       const requesterRef = ref(db, "users/" + auth.currentUser.uid + "/userMatchRequests");
-      // const reqSnap = new Promise(get(reqRef));
-      const [requesterSnap] = await Promise.all([get(requesterRef)])
-      const requesterList = requesterSnap.exists() ? requesterSnap.val() : [];
-      // get the corresponding match
-
-
+      try {
+        // get the corresponding match
+        const requesterSnap = await get(requesterRef);
+        if (requesterSnap.exists()){
+          // userMatchRequest are in the format matchKey : listingId
+          // check the values for duplicates
+          const snapValues = Object.values(requesterSnap.val());
+          const foundDuplicate = snapValues.some(id => id === listingId);
+          let foundDuplicateMatch = false;
+          const matchSnap = await get(ref(db, "users/" + auth.currentUser.uid + "/userMatches"));
+          if (matchSnap.exists()) foundDuplicateMatch = Object.values(matchSnap.val()).some(id => id === listingId);
+          if (foundDuplicate || foundDuplicateMatch){
+            setAlertModalMessage("A request or match has alreay been made for this sublet. Check your profile for request responses!");
+            setAlertModal(true);
+            return;
+          } 
+        }
+      } catch (err) {
+        console.error("Error getting userMatchRequest data:", err);
+      }
 
       const matchRequest = {
         listingId,
+        listingTitle,
+        listingLoc,
         requester: auth.currentUser.uid,
         owner,
         ownerContact,
@@ -97,41 +118,31 @@ function Listing({ setListings, showOnlyCurrentUser = false }) {
       // update user matchRequest references
       const updates = {};
 
-      const ownerRef = ref(db, "users/" + owner + "/userMatchRequests");
-      // const requesterRef = ref(db, "users/" + auth.currentUser.uid + "/userMatchRequests");
+      updates["/users/" + owner + "/userMatchRequests/" + matchKey] = listingId;
+      updates["/users/" + auth.currentUser.uid + "/userMatchRequests/" + matchKey] = listingId;
 
-      const [ownerSnap] = await Promise.all([get(ownerRef)]);
-      // const [ownerSnap, requesterSnap] = await Promise.all([
-      //   get(ownerRef),
-      //   get(requesterRef)
-      // ]);
+      update(ref(db), updates)
+        .then(async() => {
+            console.log("Match added successfully", matchKey);
+        })
+        .catch((error) => console.error("Error updating db with match:", error));
 
-      const ownerList = ownerSnap.exists() ? ownerSnap.val() : [];
-      // const requesterList = requesterSnap.exists() ? requesterSnap.val() : [];
-
-
-      if (!ownerList.includes(matchKey)) {
-        ownerList.push(matchKey);
-        updates["/users/" + owner + "/userMatchRequests"] = ownerList;
-      }
-
-      if (!requesterList.includes(matchKey)) {
-        requesterList.push(matchKey);
-        // requesterList.push(listingId);
-        updates["/users/" + auth.currentUser.uid + "/userMatchRequests"] = requesterList;
-      }
-
-      await update(ref(db), updates);
-      console.log("New match request sent:",matchKey);
-
-      alert("Match request sent!");
+      setAlertModalMessage("Match request sent!");
+      setAlertModal(true);
     } catch (error) {
+      setAlertModalMessage("Match Request could not be sent.");
+      setAlertModal(true);
       console.error("Error sending match request:", error);
     }
   };
 
+
+
+
   const updateListing = (listing) => {
-    alert("Listing update coming soon! ID: " + listing.key);
+    const message = "Listing update coming soon! ID: " + listing.key;
+    setAlertModalMessage(message);
+    setAlertModal(true);
     // Optional: Redirect to edit page or open form
   };
 
@@ -168,11 +179,7 @@ function Listing({ setListings, showOnlyCurrentUser = false }) {
               {pathname === "/" ? (
                 <button
                   onClick={() =>
-                    handleRequestMatch(
-                      listing.key,
-                      listing.createdBy,
-                      listing.contact
-                    )
+                    handleRequestMatch(listing)
                   }
                 >
                   Request Match

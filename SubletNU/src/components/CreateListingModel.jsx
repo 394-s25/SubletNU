@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { db, auth } from "../firebase";
 import { ref, push, update, child } from "firebase/database";
 import "../css/createList.css";
@@ -13,6 +13,7 @@ export default function CreateListingModal({ isOpen, onClose }) {
   const [endDate, setEndDate] = useState("");
 
   if (!isOpen) return null; // 👈 不显示时返回 null
+
 
   const handleLocationChange = (e) => {
     const currLocation = e.target.value;

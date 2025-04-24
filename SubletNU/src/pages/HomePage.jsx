@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Listing from "../components/Listing";
 import PageWrapper from "../components/PageWrapper";
 import CreateListingModal from "../components/CreateListingModel";
+import AlertModal from "../components/AlertModal";
 import LeafletMapBox from "../components/LeafletMapBox";
 import { db } from "../firebase";
 import { ref, get } from "firebase/database"; // ✅ 使用 get 而非 onValue
@@ -15,6 +16,8 @@ export default function HomePage() {
   const [showAllListings, setShowAllListings] = useState(true);
   const [showUserListings, setShowUserListings] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isAlertOpen, setAlertModal] = useState(false);
+  const [alertModalMessage, setAlertModalMessage] = useState("");
   const [selectedMarker, setSelectedMarker] = useState({}); 
   // ^to be used for filtering so user can see the listing they've just selected
 
@@ -58,6 +61,11 @@ export default function HomePage() {
     fetchListings(); // ✅ 只执行一次
   }, []);
 
+  const onAlertClose = () => {
+    setAlertModal(false);
+    setAlertModalMessage("");
+  };
+
   return (
     <PageWrapper
       onShowAll={() => {
@@ -82,13 +90,15 @@ export default function HomePage() {
           />
 
           {showAllListings && (
-            <Listing setListings={setListings} />
+            <Listing setListings={setListings} setAlertModal={setAlertModal} setAlertModalMessage={setAlertModalMessage}/>
           )}
 
           {showUserListings && (
-            <Listing setListings={setListings} showOnlyCurrentUser={true} />
+            <Listing setListings={setListings} setAlertModal={setAlertModal} setAlertModalMessage={setAlertModalMessage} showOnlyCurrentUser={true} />
           )}
+        
         </div>
+
 
         <div className="home-map-container">
 
@@ -107,6 +117,12 @@ export default function HomePage() {
       <CreateListingModal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
+      />
+
+      <AlertModal 
+        isOpen={isAlertOpen} 
+        onClose={() => onAlertClose()} 
+        message={alertModalMessage}
       />
     </PageWrapper>
   );
