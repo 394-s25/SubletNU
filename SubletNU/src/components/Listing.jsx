@@ -12,7 +12,9 @@ import {
 } from "firebase/database";
 import { useLocation } from "react-router-dom";
 
-function Listing({ setListings, setAlertModal, setAlertModalMessage, showOnlyCurrentUser = false }) {
+
+function Listing({ setListings, filter, setAlertModal, setAlertModalMessage, showOnlyCurrentUser = false }) {
+
   const [listings, setLocalListings] = useState([]);
   const pathLocation = useLocation();
   const pathname = pathLocation.pathname;
@@ -118,6 +120,7 @@ function Listing({ setListings, setAlertModal, setAlertModalMessage, showOnlyCur
       // update user matchRequest references
       const updates = {};
 
+
       updates["/users/" + owner + "/userMatchRequests/" + matchKey] = listingId;
       updates["/users/" + auth.currentUser.uid + "/userMatchRequests/" + matchKey] = listingId;
 
@@ -127,8 +130,10 @@ function Listing({ setListings, setAlertModal, setAlertModalMessage, showOnlyCur
         })
         .catch((error) => console.error("Error updating db with match:", error));
 
+
       setAlertModalMessage("Match request sent!");
       setAlertModal(true);
+
     } catch (error) {
       setAlertModalMessage("Match Request could not be sent.");
       setAlertModal(true);
@@ -146,6 +151,23 @@ function Listing({ setListings, setAlertModal, setAlertModalMessage, showOnlyCur
     // Optional: Redirect to edit page or open form
   };
 
+  // console.log("Listings", listings); // 👈 This prints the key
+  const safeFilter = filter?.toLowerCase() || "";
+
+  const filteredListings = listings.filter((listing) => {
+    // skip own listings
+    if (!showOnlyCurrentUser && listing.createdBy === auth.currentUser?.uid) {
+      return false;
+    }
+
+    return Object.values(listing).some((value) => {
+      if (typeof value === "string" || typeof value === "number") {
+        return value.toString().toLowerCase().includes(safeFilter);
+      }
+      return false;
+    });
+  });
+
   // 🔽 UI
   return (
     <div
@@ -160,7 +182,7 @@ function Listing({ setListings, setAlertModal, setAlertModalMessage, showOnlyCur
         <p>No listings found.</p>
       ) : (
         <ul style={{ margin: 0, padding: 0 }}>
-          {listings.map((listing) => (
+          {filteredListings.map((listing) => (
             <li
               key={listing.key}
               style={{
@@ -176,7 +198,7 @@ function Listing({ setListings, setAlertModal, setAlertModalMessage, showOnlyCur
               <p>Price: ${listing.price || "?"}/month</p>
               <p>{listing.description || "No description"}</p>
 
-              {pathname === "/" ? (
+              {pathname === "/" && !showOnlyCurrentUser ? (
                 <button
                   onClick={() =>
                     handleRequestMatch(listing)

@@ -6,7 +6,7 @@ import CreateListingModal from "../components/CreateListingModel";
 import AlertModal from "../components/AlertModal";
 import LeafletMapBox from "../components/LeafletMapBox";
 import { db } from "../firebase";
-import { ref, get } from "firebase/database"; // ✅ 使用 get 而非 onValue
+import { ref, get } from "firebase/database"; 
 import "../css/home.css";
 
 export default function HomePage() {
@@ -58,7 +58,7 @@ export default function HomePage() {
       }
     };
 
-    fetchListings(); // ✅ 只执行一次
+    fetchListings(); 
   }, []);
 
   const onAlertClose = () => {
@@ -83,18 +83,20 @@ export default function HomePage() {
           <h2 className="home-title">Sublet Listings</h2>
           <input
             type="text"
-            placeholder="Filter by location"
+            placeholder="Search listing by keywords"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             className="home-input"
           />
 
           {showAllListings && (
-            <Listing setListings={setListings} setAlertModal={setAlertModal} setAlertModalMessage={setAlertModalMessage}/>
+
+            <Listing setListings={setListings} filter={filter} setAlertModal={setAlertModal} setAlertModalMessage={setAlertModalMessage}/>
+
           )}
 
           {showUserListings && (
-            <Listing setListings={setListings} setAlertModal={setAlertModal} setAlertModalMessage={setAlertModalMessage} showOnlyCurrentUser={true} />
+            <Listing setListings={setListings} showOnlyCurrentUser={true} setAlertModal={setAlertModal} setAlertModalMessage={setAlertModalMessage} />
           )}
         
         </div>

@@ -12,13 +12,13 @@ export default function CreateListingModal({ isOpen, onClose }) {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  if (!isOpen) return null; // 👈 不显示时返回 null
+  if (!isOpen) return null;
 
 
   const handleLocationChange = (e) => {
     const currLocation = e.target.value;
-    // const addressRegex = /^[0-9]+\s[A-Za-z0-9\s]+\s[A-Za-z\s]+\s[A-Za-z]{2}\s[0-9]{5}$/;
     const addressRegex = /^\d+\s+[\w\s.]+,?\s+[\w\s.]+,?\s+[A-Z]{2}\s+\d{5}$/;
+
     setLocation(currLocation);
     setIsLocValid(addressRegex.test(currLocation));
   };
@@ -26,22 +26,25 @@ export default function CreateListingModal({ isOpen, onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isLocValid) {
-      // setLocation("");
       alert("Please enter a valid address (e.g. 633 Clark St Evanston IL 60208)");
       return;
     }
 
     try {
       // Fetch geolocation from Nominatim
-      const geoUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(location)}&format=json&limit=1`;
+      const geoUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+        location
+      )}&format=json&limit=1`;
       const geoRes = await fetch(geoUrl, {
         headers: {
-          'User-Agent': 'sublet-nu-app/1.0 (minxin@northwestern.edu)',
+          "User-Agent": "sublet-nu-app/1.0 (minxin@northwestern.edu)",
         },
       });
       const geoData = await geoRes.json();
       if (!geoData || geoData.length === 0) {
-        alert("Could not locate the address. Please double-check and try again.");
+        alert(
+          "Could not locate the address. Please double-check and try again."
+        );
         return;
       }
 
@@ -65,12 +68,13 @@ export default function CreateListingModal({ isOpen, onClose }) {
       const newListingKey = push(child(ref(db), "listings")).key;
       const updates = {
         ["/listings/" + newListingKey]: newListing,
-        ["/users/" + auth.currentUser.uid + "/userListings/" + newListingKey]: newListing,
+        ["/users/" + auth.currentUser.uid + "/userListings/" + newListingKey]:
+          newListing,
       };
 
       await update(ref(db), updates);
       alert("Listing posted successfully!");
-      onClose(); // 👈 提交成功后关闭弹窗
+      onClose();
     } catch (error) {
       console.error("Error posting listing:", error);
     }
@@ -79,17 +83,57 @@ export default function CreateListingModal({ isOpen, onClose }) {
   return (
     <div className="modal-overlay">
       <div className="modal-box">
-        <button className="modal-close" onClick={onClose}>×</button>
+        <button className="modal-close" onClick={onClose}>
+          ×
+        </button>
         <h2 className="create-title">Create a New Listing</h2>
         <form onSubmit={handleSubmit} className="create-form">
-          <input type="text" placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} required />
+          <input
+            type="text"
+            placeholder="Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+          />
           <label>Start Date:</label>
-          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} max={endDate} required />
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            max={endDate}
+            required
+          />
           <label>End Date:</label>
-          <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} min={startDate} required />
-          <textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} required />
-          <input type="text" placeholder="633 Clark St Evanston IL 60208" value={location} onChange={handleLocationChange} required />
-          <input type="number" placeholder="Price" value={price} min="0" onChange={(e) => setPrice(e.target.value)} required />
+
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            min={startDate}
+            required
+          />
+          <textarea
+            placeholder="Description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            required
+          />
+          <input
+            type="text"
+            placeholder="633 Clark St Evanston IL 60208"
+            value={location}
+            onChange={handleLocationChange}
+            required
+          />
+          <input
+            type="number"
+            placeholder="Monthly Price"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            min="0"
+            required
+          />
+
           <button type="submit">Post Listing</button>
         </form>
       </div>
