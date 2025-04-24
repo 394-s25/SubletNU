@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { db, auth } from "../firebase";
 import { ref, push, update, child } from "firebase/database";
 import "../css/createList.css";
@@ -14,9 +14,10 @@ export default function CreateListingModal({ isOpen, onClose }) {
 
   if (!isOpen) return null;
 
+
   const handleLocationChange = (e) => {
     const currLocation = e.target.value;
-    const addressRegex = /^.+,?\s*\d+\s+.+,?\s*.+,?\s*[A-Za-z]{2}\s*\d{5}$/;
+    const addressRegex = /^\d+\s+[\w\s.]+,?\s+[\w\s.]+,?\s+[A-Z]{2}\s+\d{5}$/;
 
     setLocation(currLocation);
     setIsLocValid(addressRegex.test(currLocation));
@@ -25,10 +26,7 @@ export default function CreateListingModal({ isOpen, onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isLocValid) {
-      setLocation("");
-      alert(
-        "Please enter a valid address (e.g. 633 Clark St Evanston IL 60208)"
-      );
+      alert("Please enter a valid address (e.g. 633 Clark St Evanston IL 60208)");
       return;
     }
 
@@ -106,6 +104,7 @@ export default function CreateListingModal({ isOpen, onClose }) {
             required
           />
           <label>End Date:</label>
+
           <input
             type="date"
             value={endDate}
@@ -134,7 +133,6 @@ export default function CreateListingModal({ isOpen, onClose }) {
             min="0"
             required
           />
-
 
           <button type="submit">Post Listing</button>
         </form>

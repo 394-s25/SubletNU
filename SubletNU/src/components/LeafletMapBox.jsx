@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
@@ -23,8 +23,18 @@ const center = {
   lng: -87.675171,
 };
 
-export default function LeafletMapBox({ listings }) {
+export default function LeafletMapBox({ setSelectedMarker, listings }) {
   const [markers, setMarkers] = useState([]);
+  const [selected, setSelected] = useState({}); // the marker object
+
+  const handleMarkerClick = (marker) => {
+    try {
+      setSelectedMarker(marker);
+      setSelected(marker);
+    } catch (error) {
+      console.error("Map click error:", error);
+    }
+  };
 
   useEffect(() => {
     const fetchCoordinates = async () => {
@@ -70,12 +80,16 @@ export default function LeafletMapBox({ listings }) {
       />
 
       {markers.map((marker, index) => (
-        <Marker key={index} position={[marker.lat, marker.lng]}>
+        <Marker 
+          key={index} 
+          position={[marker.lat, marker.lng]}
+          >
           <Popup>
             <strong>{marker.title || "Untitled"}</strong><br />
             {marker.location}<br />
             {marker.startDate} → {marker.endDate}<br />
-            <strong>${marker.price}/month</strong>
+            <strong>${marker.price}/month</strong><br />
+            <button onClick={() => setSelectedMarker(marker)}>Read More</button>
           </Popup>
         </Marker>
       ))}
