@@ -3,7 +3,7 @@ import { db, auth } from "../firebase";
 import { ref, push, update, child } from "firebase/database";
 import "../css/createList.css";
 
-export default function CreateListingModal({ isOpen, onClose }) {
+export default function CreateListingModal({ isOpen, onClose, setAlertModal, setAlertModalMessage }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
@@ -26,7 +26,9 @@ export default function CreateListingModal({ isOpen, onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isLocValid) {
-      alert("Please enter a valid address (e.g. 633 Clark St Evanston IL 60208)");
+      // alert("Please enter a valid address (e.g. 633 Clark St Evanston IL 60208)");
+      setAlertModalMessage("Please enter a valid address (e.g. 633 Clark St Evanston IL 60208)");
+      setAlertModal(true);
       return;
     }
 
@@ -42,9 +44,11 @@ export default function CreateListingModal({ isOpen, onClose }) {
       });
       const geoData = await geoRes.json();
       if (!geoData || geoData.length === 0) {
-        alert(
-          "Could not locate the address. Please double-check and try again."
-        );
+        // alert(
+        //   "Could not locate the address. Please double-check and try again."
+        // );
+        setAlertModalMessage("Could not locate the address. Please double-check and try again.");
+        setAlertModal(true);
         return;
       }
 
@@ -73,7 +77,9 @@ export default function CreateListingModal({ isOpen, onClose }) {
       };
 
       await update(ref(db), updates);
-      alert("Listing posted successfully!");
+      // alert("Listing posted successfully!");
+      setAlertModalMessage("Listing posted successfully!");
+      setAlertModal(true);
       onClose();
     } catch (error) {
       console.error("Error posting listing:", error);

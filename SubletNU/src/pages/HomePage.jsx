@@ -21,45 +21,72 @@ export default function HomePage() {
   const [selectedMarker, setSelectedMarker] = useState({}); 
   // ^to be used for filtering so user can see the listing they've just selected
 
-  const filteredListings = listings.filter(
-    (listing) =>
-      listing.location?.toLowerCase().includes(filter.toLowerCase())
-  );
+  // const filteredListings = listings.filter(
+  //   (listing) =>
+  //     listing.location?.toLowerCase().includes(filter.toLowerCase())
+  // );
 
+
+  // useEffect(() => {
+  //   const fetchListings = async () => {
+  //     try {
+  //       const snapshot = await get(ref(db, "/listings"));
+  //       if (snapshot.exists()) {
+  //         const data = snapshot.val();
+  //         const listingsArray = Object.entries(data).map(([key, value]) => ({
+  //           key,
+  //           ...value,
+  //         }));
+  //         setListings(listingsArray);
+
+  //         const markers = listingsArray
+  //           .filter((l) => l.lat && l.lng)
+  //           .map((l) => ({
+  //             lat: parseFloat(l.lat),
+  //             lng: parseFloat(l.lng),
+  //             ...l,
+  //           }));
+  //         setMapMarkers(markers);
+  //       } else {
+  //         console.warn("No listings found.");
+  //       }
+  //     } catch (err) {
+  //       console.error("Failed to fetch listings:", err);
+  //     }
+  //   };
+
+  //   fetchListings(); 
+  // }, []);
+
+  // when the listings updates, update the map markers
+  
+  
   useEffect(() => {
-    console.log("Home page selected marker:", selectedMarker);
-  },[selectedMarker]);
+    const delayTimer = setTimeout(() => {
+      console.log("listings has changed");
+      updateMarkers();
+    }, 2000);
 
-  useEffect(() => {
-    const fetchListings = async () => {
-      try {
-        const snapshot = await get(ref(db, "/listings"));
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          const listingsArray = Object.entries(data).map(([key, value]) => ({
-            key,
-            ...value,
-          }));
-          setListings(listingsArray);
+    return () => clearTimeout(delayTimer);
 
-          const markers = listingsArray
-            .filter((l) => l.lat && l.lng)
-            .map((l) => ({
-              lat: parseFloat(l.lat),
-              lng: parseFloat(l.lng),
-              ...l,
-            }));
-          setMapMarkers(markers);
-        } else {
-          console.warn("No listings found.");
-        }
-      } catch (err) {
-        console.error("Failed to fetch listings:", err);
-      }
-    };
+  },[listings]);
 
-    fetchListings(); 
-  }, []);
+  const updateMarkers = () => {
+    try {
+      const markers = listings.filter((l) => l.lat && l.lng)
+        .map((l) => ({
+          lat: parseFloat(l.lat),
+          lng: parseFloat(l.lng),
+          ...l,
+        }));
+      setMapMarkers(markers);
+      console.log("listings:", listings);
+      console.log("markers:",markers);
+      
+    } catch (err) {
+      console.error("Failed to map markers:", err);
+    }
+  }
 
   const onAlertClose = () => {
     setAlertModal(false);
@@ -91,12 +118,20 @@ export default function HomePage() {
 
           {showAllListings && (
 
-            <Listing setListings={setListings} filter={filter} setAlertModal={setAlertModal} setAlertModalMessage={setAlertModalMessage}/>
+            <Listing setListings={setListings} 
+                      filter={filter} 
+                      setAlertModal={setAlertModal} 
+                      setAlertModalMessage={setAlertModalMessage}
+                      selectedMarker={selectedMarker}/>
 
           )}
 
           {showUserListings && (
-            <Listing setListings={setListings} showOnlyCurrentUser={true} setAlertModal={setAlertModal} setAlertModalMessage={setAlertModalMessage} />
+            <Listing setListings={setListings} 
+                      showOnlyCurrentUser={true} 
+                      setAlertModal={setAlertModal} 
+                      setAlertModalMessage={setAlertModalMessage}
+                      selectedMarker={selectedMarker} />
           )}
         
         </div>
@@ -119,6 +154,8 @@ export default function HomePage() {
       <CreateListingModal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
+        setAlertModal={setAlertModal}
+        setAlertModalMessage={setAlertModalMessage}
       />
 
       <AlertModal 

@@ -217,8 +217,19 @@ export default function ProfilePage() {
       ) : (<p>No approved match requests</p>)}
 
 
-      <CreateListingModal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} />
-      <AlertModal isOpen={isAlertOpen} onClose={() => onAlertClose()} message={alertModalMessage}/>
+      <CreateListingModal 
+        isOpen={isCreateOpen} 
+        onClose={() => setIsCreateOpen(false)}
+        setAlertModal={setAlertModal}
+        setAlertModalMessage={setAlertModalMessage} 
+      />
+
+      <AlertModal 
+        isOpen={isAlertOpen} 
+        onClose={() => onAlertClose()} 
+        message={alertModalMessage}
+      />
+
     </PageWrapper>
   );
 }

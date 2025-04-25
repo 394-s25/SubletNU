@@ -39,9 +39,15 @@ export default function LeafletMapBox({ setSelectedMarker, listings }) {
   useEffect(() => {
     const fetchCoordinates = async () => {
       const results = [];
+      console.log("mapbox inputed:", listings);
 
       for (const listing of listings) {
+        console.log("-->for:",listing);
         if (!listing.location) continue;
+        if (listing.lat) {
+          results.push(listing);
+          continue;
+        }
         const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
           listing.location
         )}&format=json&limit=1`;
@@ -66,6 +72,7 @@ export default function LeafletMapBox({ setSelectedMarker, listings }) {
         }
       }
 
+      console.log("mapbox markers:",results);
       setMarkers(results);
     };
 

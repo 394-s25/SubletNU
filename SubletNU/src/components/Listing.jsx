@@ -13,13 +13,13 @@ import {
 import { useLocation } from "react-router-dom";
 
 
-function Listing({ setListings, filter, setAlertModal, setAlertModalMessage, showOnlyCurrentUser = false }) {
+function Listing({ setListings, filter, setAlertModal, setAlertModalMessage, showOnlyCurrentUser = false, selectedMarker= null }) {
 
   const [listings, setLocalListings] = useState([]);
   const pathLocation = useLocation();
   const pathname = pathLocation.pathname;
 
-  // 🔁 Fetch listings from DB
+  //  Fetch listings from DB
   useEffect(() => {
     let listingQuery;
 
@@ -57,9 +57,10 @@ function Listing({ setListings, filter, setAlertModal, setAlertModalMessage, sho
     );
 
     return () => unsubscribe();
-  }, [pathname, setListings, showOnlyCurrentUser]);
+  }, [pathname, showOnlyCurrentUser]);
 
-  // 🔁 Request a match
+
+  //  Request a match
   const handleRequestMatch = async (listing) => {
     try {
       const owner = listing.createdBy;
@@ -151,10 +152,14 @@ function Listing({ setListings, filter, setAlertModal, setAlertModalMessage, sho
     // Optional: Redirect to edit page or open form
   };
 
+  //
+  // Filtering the Listings
+  //
+
   // console.log("Listings", listings); // 👈 This prints the key
   const safeFilter = filter?.toLowerCase() || "";
 
-  const filteredListings = listings.filter((listing) => {
+  let filteredListings = listings.filter((listing) => {
     // skip own listings
     if (!showOnlyCurrentUser && listing.createdBy === auth.currentUser?.uid) {
       return false;
@@ -167,6 +172,36 @@ function Listing({ setListings, filter, setAlertModal, setAlertModalMessage, sho
       return false;
     });
   });
+
+  // if a marker is selected, move it to the top of the filtered list
+  const moveToTop = (array, listing) => {
+    const idx = array.findIndex((element) => element.key == listing.key);
+    if (idx > -1) { //  found  
+      const [item] = array.splice(idx, 1); // remove item
+      console.log("elem to move:",item);
+      array.unshift(item);
+    } 
+    return array;
+  };
+
+  useEffect(() => {
+    console.log("filtered:", filteredListings);
+    if (filteredListings) updateListings(filteredListings);
+  }, [filter]);
+
+  const updateListings= (newListings) => {
+    setListings(newListings);
+  }
+
+  // update marker
+  useEffect(() => {
+    if (selectedMarker){ 
+      console.log("listing chosen marker:", selectedMarker);
+      console.log("list prior:", filteredListings);
+      console.log("Moved:", moveToTop(filteredListings,selectedMarker));
+    }
+  }, [selectedMarker]);
+
 
   // 🔽 UI
   return (
