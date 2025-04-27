@@ -19,6 +19,9 @@ export default function HomePage() {
   const [isAlertOpen, setAlertModal] = useState(false);
   const [alertModalMessage, setAlertModalMessage] = useState("");
   const [selectedMarker, setSelectedMarker] = useState({}); 
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [editingListing, setEditingListing] = useState(null);
+
   // ^to be used for filtering so user can see the listing they've just selected
 
   // const filteredListings = listings.filter(
@@ -131,7 +134,11 @@ export default function HomePage() {
                       showOnlyCurrentUser={true} 
                       setAlertModal={setAlertModal} 
                       setAlertModalMessage={setAlertModalMessage}
-                      selectedMarker={selectedMarker} />
+                      selectedMarker={selectedMarker}
+                      isUpdateModalOpen={isUpdateModalOpen}
+                      setIsUpdateModalOpen={setIsUpdateModalOpen}
+                      editingListing={editingListing}
+                      setEditingListing={setEditingListing} />
           )}
         
         </div>

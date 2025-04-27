@@ -11,13 +11,18 @@ import {
   update,
 } from "firebase/database";
 import { useLocation } from "react-router-dom";
+import UpdateListingModal from "./UpdateListingModal";
 
-
-function Listing({ setListings, filter, setAlertModal, setAlertModalMessage, showOnlyCurrentUser = false, selectedMarker= null }) {
+function Listing({ setListings, filter, setAlertModal, setAlertModalMessage, isUpdateModalOpen, setIsUpdateModalOpen, editingListing, setEditingListing, showOnlyCurrentUser = false, selectedMarker= null }) {
 
   const [listings, setLocalListings] = useState([]);
   const pathLocation = useLocation();
   const pathname = pathLocation.pathname;
+
+
+
+  // const [editingListing, setEditingListing] = useState(null);
+  // const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
 
   //  Fetch listings from DB
   useEffect(() => {
@@ -146,10 +151,8 @@ function Listing({ setListings, filter, setAlertModal, setAlertModalMessage, sho
 
 
   const updateListing = (listing) => {
-    const message = "Listing update coming soon! ID: " + listing.key;
-    setAlertModalMessage(message);
-    setAlertModal(true);
-    // Optional: Redirect to edit page or open form
+    setEditingListing(listing);
+    setIsUpdateModalOpen(true);
   };
 
   //
@@ -242,9 +245,21 @@ function Listing({ setListings, filter, setAlertModal, setAlertModalMessage, sho
                   Request Match
                 </button>
               ) : pathname === "/profile" || showOnlyCurrentUser ? (
+                <>
                 <button onClick={() => updateListing(listing)}>
                   Update Listing
                 </button>
+            
+                {isUpdateModalOpen && editingListing && (
+                  <UpdateListingModal
+                    isOpen={isUpdateModalOpen}
+                    listing={editingListing}
+                    onClose={() => setIsUpdateModalOpen(false)}
+                    setAlertModal={setAlertModal}
+                    setAlertModalMessage={setAlertModalMessage}
+                  />
+                )}
+              </>
               ) : null}
             </li>
           ))}
