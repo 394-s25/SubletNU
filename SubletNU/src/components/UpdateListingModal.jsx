@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { db } from "../firebase";
 import { ref, update } from "firebase/database";
-import "../css/createList.css"; // Reuse the same styles
+import "../css/createList.css"; 
 
-export default function UpdateListingModal({ 
-  isOpen, 
-  onClose, 
-  listing, 
-  setAlertModal, 
-  setAlertModalMessage 
+export default function UpdateListingModal({
+  isOpen,
+  onClose,
+  listing,
+  setAlertModal,
+  setAlertModalMessage,
 }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -34,7 +34,6 @@ export default function UpdateListingModal({
   const handleLocationChange = (e) => {
     const currLocation = e.target.value;
     const addressRegex = /^\d+\s+[\w\s.]+,?\s+[\w\s.]+,?\s+[A-Z]{2}\s+\d{5}$/;
-
     setLocation(currLocation);
     setIsLocValid(addressRegex.test(currLocation));
   };
@@ -50,11 +49,17 @@ export default function UpdateListingModal({
     }
 
     try {
-      // Check if location changed
-      let lat = listing.lat;
-      let lng = listing.lng;
+      const updatesData = {
+        title,
+        description,
+        location,
+        price,
+        startDate,
+        endDate,
+      };
 
       if (location !== listing.location) {
+        
         const geoUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
           location
         )}&format=json&limit=1`;
@@ -71,28 +76,24 @@ export default function UpdateListingModal({
           setAlertModal(true);
           return;
         }
-        lat = parseFloat(geoData[0].lat);
-        lng = parseFloat(geoData[0].lon);
+
+        updatesData.lat = parseFloat(geoData[0].lat);
+        updatesData.lng = parseFloat(geoData[0].lon);
       }
 
-      const updatedListing = {
-        ...listing,
-        title,
-        description,
-        location,
-        price,
-        startDate,
-        endDate,
-        lat,
-        lng,
-      };
-
       const updates = {
-        ["/listings/" + listing.key]: updatedListing,
-        ["/users/" + listing.createdBy + "/userListings/" + listing.key]: updatedListing,
+        ["/listings/" + listing.key]: {
+          ...listing,
+          ...updatesData,
+        },
+        ["/users/" + listing.createdBy + "/userListings/" + listing.key]: {
+          ...listing,
+          ...updatesData,
+        },
       };
 
       await update(ref(db), updates);
+
       setAlertModalMessage("Listing updated successfully!");
       setAlertModal(true);
       onClose();
