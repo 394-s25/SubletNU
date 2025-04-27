@@ -1,12 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { db, auth } from "../firebase";
-import {
-  ref,
-  push,
-  update,
-  get,
-  onChildAdded
-} from "firebase/database";
+import { ref, push, update, get, onChildAdded } from "firebase/database";
 import CreateListingModal from "../components/CreateListingModel";
 import AlertModal from "../components/AlertModal";
 import PageWrapper from "../components/PageWrapper";
@@ -23,95 +17,66 @@ export default function ProfilePage() {
   const dbMatchReqRef = ref(db, "users/" + auth.currentUser.uid + "/userMatchRequests");
   const dbMatchesRef = ref(db, "users/" + auth.currentUser.uid + "/userMatches");
 
-
-  // render profile page with matches and then listen for added and rmeoved children
   useEffect(() => {
     let unsubscribeReqAdded = null;
     let unsubscribeMatchAdded = null;
 
-    // listen for added match Requests
     try {
       unsubscribeReqAdded = onChildAdded(dbMatchReqRef, (snapshot) => {
-        const data = snapshot.key; // the match key 
-
-        // add all request ids that are not duplicates
-
-        if (!matchRequestsIds.includes(data)){
+        const data = snapshot.key;
+        if (!matchRequestsIds.includes(data)) {
           setRequestIds((prev) => [...prev, data]);
-
-          // get corresponding match id
           const matchRef = ref(db, "matches/" + data);
           get(matchRef).then((snap) => {
-            if (snap.exists()){
+            if (snap.exists()) {
               const dbMatch = snap.val();
               setRequests((prev) => {
-                const matchExists = prev.some((match) => match.key == dbMatch.key);
+                const matchExists = prev.some((match) => match.key === dbMatch.key);
                 if (!matchExists) return [...prev, dbMatch];
                 return prev;
               });
-              
             }
           });
         }
-
       });
     } catch (err) {
       console.error("Error onChildAdded for adding a new match req:", err);
     }
 
-
-    // listen for new matches added
     try {
       unsubscribeMatchAdded = onChildAdded(dbMatchesRef, (snapshot) => {
-        const data = snapshot.key; // new match key 
+        const data = snapshot.key;
         if (!data) return;
-        
         const dbRef = ref(db, "matches/" + data);
         get(dbRef).then((snap) => {
-          if (snap.val()) { // snap.val() is the match
+          if (snap.val()) {
             setMatches((prev) => {
-              const alreadyIn = prev.find((m) => m.key === data); //data is the new match key
+              const alreadyIn = prev.find((m) => m.key === data);
               if (!alreadyIn) return [...prev, snap.val()];
               return prev;
             });
           }
         });
-        
       });
     } catch (err) {
       console.error("Error onChildAdded for match data:", err);
     }
-    
 
-    // unsubscribe to all listeners
     return () => {
       if (unsubscribeReqAdded) unsubscribeReqAdded();
       if (unsubscribeMatchAdded) unsubscribeMatchAdded();
-    }  
-
-  }, [dbMatchReqRef, dbMatchesRef]); //on any change in the matches and match requests
-
-
-  useEffect(() => {
-    console.log("matches curr:",matches);
-    console.log("requests curr:",matchRequests);
-
-  }, [matches, matchRequests]);
-
-
+    };
+  }, [dbMatchReqRef, dbMatchesRef]);
 
   const handleApproveMatch = async (matchObj) => {
-    update(ref(db, "matches/" + matchObj.key), { approved: "true" });
-
+    await update(ref(db, "matches/" + matchObj.key), { approved: "true" });
     const ownerPath = "users/" + matchObj.owner + "/userMatchRequests/" + matchObj.key;
     const requesterPath = "users/" + matchObj.requester + "/userMatchRequests/" + matchObj.key;
-
-    await update(ref(db),{
+    await update(ref(db), {
       [ownerPath]: null,
-      [requesterPath]: null
+      [requesterPath]: null,
     });
 
-    // add approved match to the requester and owner
     await updateMatch(matchObj);
     setMatches((prev) => [...prev, matchObj]);
     setRequestIds((prev) => prev.filter((item) => item !== matchObj.key));
@@ -124,14 +89,17 @@ export default function ProfilePage() {
   const updateMatch = async (matchObj) => {
     await update(ref(db), {
       ["users/" + matchObj.owner + "/userMatches/" + matchObj.key]: matchObj.listingId,
-      ["users/" + matchObj.requester + "/userMatches/" + matchObj.key]: matchObj.listingId
+      ["users/" + matchObj.requester + "/userMatches/" + matchObj.key]: matchObj.listingId,
     });
   };
 
   const handleContactOwner = (match, isOwner) => {
     let message = "";
-    isOwner ? message = "Here is your sublet requester's email: " + match.requesterContact
-      : message = "Here is the sublet owner's email: " + match.ownerContact;
+    if (isOwner) {
+      message = "Here is your sublet requester's email: " + match.requesterContact;
+    } else {
+      message = "Here is the sublet owner's email: " + match.ownerContact;
+    }
     setAlertModalMessage(message);
     setAlertModal(true);
   };
@@ -147,89 +115,105 @@ export default function ProfilePage() {
       onShowUser={() => {}}
       onCreateNew={() => setIsCreateOpen(true)}
     >
-      <h2 className="profile-title">Your Profile</h2>
-      <p className="profile-email">Email: {auth.currentUser.email}</p>
+      <div className="profile-header">
+        <h2 className="profile-title">Your Profile</h2>
+        <p className="profile-email">Email: {auth.currentUser.email}</p>
+      </div>
 
-      <h2>Your Listings Matches</h2>
-      <h3>Pending</h3>
-      
-      {matchRequests.filter((match) => match.owner === auth.currentUser.uid).length > 0 ? (
-        <ul>
-          {matchRequests.map((match) => (
-            <li key={match.key}>
-              {match.owner === auth.currentUser.uid ? (
-                <>
-                  <p>User {match.requester} wants to sublet your listing "{match.listingTitle}" at {match.listingLoc}</p>
-                  <button onClick={() => handleApproveMatch(match)}>Approve</button>
-                </>
-              ) : null}
-            </li>
-          ))}
-        </ul>
-      ) : (<p>No pending match requests</p>)}
+      <div className="profile-section-grid">
+        {/* 左边：你的 Listings Matches */}
+        <div className="profile-card">
+          <h3>Your Listings Matches</h3>
 
-      <h3>Approved</h3>
-      {matches.filter((match) => match.owner === auth.currentUser.uid).length > 0 ? (
-        <ul>
-          {matches.map((match) => (
-            <li key={match.key}>
-              {match.owner === auth.currentUser.uid ? (
-                <>
-                  <p>You have approved a matching with {match.requester} for listing "{match.listingTitle}" at {match.listingLoc}</p>
-                  <button onClick={() => handleContactOwner(match, true)}>Contact</button>
-                </>
-              ) : null}
-            </li>
-          ))}
-        </ul>
-      ) : (<p>No approved match requests</p>)}
+          <h4>Pending</h4>
+          {matchRequests.filter((m) => m.owner === auth.currentUser.uid).length > 0 ? (
+            matchRequests
+              .filter((m) => m.owner === auth.currentUser.uid)
+              .map((match) => (
+                <div key={match.key} className="profile-item">
+                  User {match.requester} wants to sublet your listing "{match.listingTitle}" at {match.listingLoc}
+                  <button
+                    className="profile-button"
+                    onClick={() => handleApproveMatch(match)}
+                  >
+                    Approve
+                  </button>
+                </div>
+              ))
+          ) : (
+            <p className="empty-message">No pending match requests</p>
+          )}
 
+          <h4>Approved</h4>
+          {matches.filter((m) => m.owner === auth.currentUser.uid).length > 0 ? (
+            matches
+              .filter((m) => m.owner === auth.currentUser.uid)
+              .map((match) => (
+                <div key={match.key} className="profile-item">
+                  You have approved a match with {match.requester} for listing "{match.listingTitle}" at {match.listingLoc}
+                  <button
+                    className="profile-button"
+                    onClick={() => handleContactOwner(match, true)}
+                  >
+                    Contact
+                  </button>
+                </div>
+              ))
+          ) : (
+            <p className="empty-message">No approved match requests</p>
+          )}
+        </div>
 
+        {/* 右边：你的 Match Request Status */}
+        <div className="profile-card">
+          <h3>Your Match Request Status</h3>
 
-      <h2>Your Match Request Status</h2>
-      <h3>Pending</h3>
-      {matchRequests.filter((match) => match.requester === auth.currentUser.uid).length > 0 ? (
-        <ul>
-          {matchRequests.map((match) => (
-            <li key={match.key}>
-              {match.requester === auth.currentUser.uid ? (
-                <p>Waiting on sublet owner's response for listing "{match.listingTitle}" at {match.listingLoc}</p>
-              ) : null}
-            </li>
-          ))}
-        </ul>
-      ) : (<p>No pending match requests</p>)}
+          <h4>Pending</h4>
+          {matchRequests.filter((m) => m.requester === auth.currentUser.uid).length > 0 ? (
+            matchRequests
+              .filter((m) => m.requester === auth.currentUser.uid)
+              .map((match) => (
+                <div key={match.key} className="profile-item">
+                  Waiting on sublet owner's response for listing "{match.listingTitle}" at {match.listingLoc}
+                </div>
+              ))
+          ) : (
+            <p className="empty-message">No pending match requests</p>
+          )}
 
-      <h3>Approved</h3>
-      {matches.filter((match) => match.requester === auth.currentUser.uid).length > 0 ? (
-        <ul>
-          {matches.map((match) => (
-            <li key={match.key}>
-              {match.requester === auth.currentUser.uid ? (
-                <>
-                  <p>Owner of listing "{match.listingTitle}" at {match.listingLoc} accepted your match</p>
-                  <button onClick={() => handleContactOwner(match, false)}>Contact</button>
-                </>
-              ) : null}
-            </li>
-          ))}
-        </ul>
-      ) : (<p>No approved match requests</p>)}
+          <h4>Approved</h4>
+          {matches.filter((m) => m.requester === auth.currentUser.uid).length > 0 ? (
+            matches
+              .filter((m) => m.requester === auth.currentUser.uid)
+              .map((match) => (
+                <div key={match.key} className="profile-item">
+                  Owner of listing "{match.listingTitle}" at {match.listingLoc} accepted your match
+                  <button
+                    className="profile-button"
+                    onClick={() => handleContactOwner(match, false)}
+                  >
+                    Contact
+                  </button>
+                </div>
+              ))
+          ) : (
+            <p className="empty-message">No approved match requests</p>
+          )}
+        </div>
+      </div>
 
-
-      <CreateListingModal 
-        isOpen={isCreateOpen} 
+      <CreateListingModal
+        isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
         setAlertModal={setAlertModal}
-        setAlertModalMessage={setAlertModalMessage} 
+        setAlertModalMessage={setAlertModalMessage}
       />
 
-      <AlertModal 
-        isOpen={isAlertOpen} 
-        onClose={() => onAlertClose()} 
+      <AlertModal
+        isOpen={isAlertOpen}
+        onClose={onAlertClose}
         message={alertModalMessage}
       />
-
     </PageWrapper>
   );
 }
