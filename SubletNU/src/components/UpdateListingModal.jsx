@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { db } from "../firebase";
 import { ref, update } from "firebase/database";
-import "../css/createList.css"; // 复用创建页面的样式
+import "../css/createList.css"; 
 
 export default function UpdateListingModal({
   isOpen,

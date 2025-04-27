@@ -15,7 +15,7 @@
   color: #6b7280;
 }
 
-/* 外部容器，左右分栏布局 */
+
 .profile-section-grid {
   display: flex;
   flex-direction: row;
@@ -23,7 +23,7 @@
   flex-wrap: wrap;
 }
 
-/* 每张大卡片 */
+
 .profile-card {
   flex: 1;
   min-width: 300px;
@@ -38,23 +38,23 @@
   transition: all 0.3s ease;
 }
 
-/* 大卡片 hover 浮起 */
+
 .profile-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
 }
 
-/* Pending/Approved 里面的小条目 */
+
 .profile-item {
   padding: 16px;
-  background-color: #f9fafb; /* 微微淡灰背景 */
-  border: 1px solid #e5e7eb;
+  background-color: #f9fafb; 
+  border: 1px solid #dbdbdb;
   border-radius: 12px;
   font-size: 15px;
   color: #374151;
 }
 
-/* 按钮样式 */
+
 .profile-button {
   margin-top: 8px;
   padding: 10px 16px;
@@ -71,14 +71,14 @@
   background-color: #4c1c9b;
 }
 
-/* 空数据提示 */
+
 .empty-message {
   color: #9ca3af;
   font-style: italic;
   padding-left: 8px;
 }
 
-/* 小屏幕优化 */
+
 @media (max-width: 768px) {
   .profile-section-grid {
     flex-direction: column;
