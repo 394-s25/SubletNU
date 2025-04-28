@@ -62,35 +62,34 @@ export default function HomePage() {
       onCreateNew={() => setIsCreateOpen(true)}
     >
       <div className="home-layout">
-        {/* 左边部分 */}
+        {/* 左侧部分 */}
         <div className="home-left">
-          <h2 className="home-title">Sublet Listings</h2>
+          {/* 固定在顶部 */}
+          <div className="home-left-header">
+            <h2 className="home-title">Sublet Listings</h2>
+            <input
+              type="text"
+              placeholder="Search listing by keywords"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="home-input"
+            />
+          </div>
 
-          <input
-            type="text"
-            placeholder="Search listing by keywords"
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="home-input"
-          />
-          {showAllListings && (
-            <div className="home-your-listings">
-
+          {/* 可以滚动 */}
+          <div className="home-left-list">
+            {showAllListings && (
               <Listing
                 setListings={setListings}
                 filter={filter}
                 setAlertModal={setAlertModal}
                 setAlertModalMessage={setAlertModalMessage}
                 selectedMarker={selectedMarker}
-                setSelectedMarker={setSelectedMarker} 
+                setSelectedMarker={setSelectedMarker}
                 listingWrapperClass="listing-card"
               />
-            </div>
-          )}
-
-          {showUserListings && (
-            <div className="home-your-listings">
-
+            )}
+            {showUserListings && (
               <Listing
                 setListings={setListings}
                 showOnlyCurrentUser={true}
@@ -103,12 +102,11 @@ export default function HomePage() {
                 setEditingListing={setEditingListing}
                 listingWrapperClass="listing-card"
               />
-            </div>
-          )}
-
+            )}
+          </div>
         </div>
 
-
+        {/* 地图部分 */}
         <div className="home-map-container">
           <LeafletMapBox
             setSelectedMarker={setSelectedMarker}

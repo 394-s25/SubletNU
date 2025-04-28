@@ -1,16 +1,12 @@
-import React, { useEffect, useState, useRef } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import React, { useEffect, useState } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
-// Fix Leaflet's default icon issues
 import iconUrl from "leaflet/dist/images/marker-icon.png";
 import iconShadow from "leaflet/dist/images/marker-shadow.png";
 
-let DefaultIcon = L.icon({
-  iconUrl,
-  shadowUrl: iconShadow,
-});
+let DefaultIcon = L.icon({ iconUrl, shadowUrl: iconShadow });
 L.Marker.prototype.options.icon = DefaultIcon;
 
 const containerStyle = {
@@ -18,81 +14,44 @@ const containerStyle = {
   height: "100%",
 };
 
-const center = {
-  lat: 42.055984,
-  lng: -87.675171,
-};
+const defaultCenter = { lat: 42.055984, lng: -87.675171 };
 
-export default function LeafletMapBox({ setSelectedMarker, listings, selectedMarker }) {
-  const [markers, setMarkers] = useState([]);
-  const mapRef = useRef(); // 👉 添加地图引用
+function FlyToMarker({ selectedMarker }) {
+  const map = useMap();
 
   useEffect(() => {
-    const fetchCoordinates = async () => {
-      const results = [];
-      console.log("mapbox inputed:", listings);
-
-      for (const listing of listings) {
-        if (!listing.location) continue;
-        if (listing.lat && listing.lng) {
-          results.push(listing);
-          continue;
-        }
-        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
-          listing.location
-        )}&format=json&limit=1`;
-
-        try {
-          const res = await fetch(url, {
-            headers: {
-              'User-Agent': 'sublet-nu-app/1.0 (minxin@northwestern.edu)',
-            },
-          });
-          const data = await res.json();
-          if (data.length > 0) {
-            results.push({
-              lat: parseFloat(data[0].lat),
-              lng: parseFloat(data[0].lon),
-              ...listing,
-            });
-          }
-        } catch (err) {
-          console.error("Geocode failed for:", listing.location, err);
-        }
-      }
-
-      console.log("mapbox markers:", results);
-      setMarkers(results);
-    };
-
-    fetchCoordinates();
-  }, [listings]);
-
-  
-  useEffect(() => {
-    if (selectedMarker && selectedMarker.lat && selectedMarker.lng && mapRef.current) {
-      mapRef.current.flyTo([selectedMarker.lat, selectedMarker.lng], 16, {
-        duration: 1.5,
-      });
+    if (selectedMarker?.lat && selectedMarker?.lng) {
+      console.log("[FlyToMarker] Flying to:", selectedMarker);
+      map.flyTo([selectedMarker.lat, selectedMarker.lng], 17, { duration: 1.5 });
     }
-  }, [selectedMarker]);
+  }, [selectedMarker, map]);
+
+  return null; // 不渲染任何元素
+}
+
+export default function LeafletMapBox({ setSelectedMarker, selectedMarker, listings }) {
+  const [markers, setMarkers] = useState([]);
+
+  useEffect(() => {
+    console.log("[mapbox] Input listings:", listings);
+    setMarkers(listings);
+  }, [listings]);
 
   return (
     <MapContainer
-      center={center}
+      center={defaultCenter}
       zoom={14}
       scrollWheelZoom
       style={containerStyle}
-      whenCreated={(mapInstance) => { mapRef.current = mapInstance; }}
     >
       <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+        attribution='&copy; <a href="https://carto.com/">CartoDB</a>'
       />
 
-      {markers.map((marker, index) => (
+      {markers.map((marker, idx) => (
         <Marker
-          key={index}
+          key={idx}
           position={[marker.lat, marker.lng]}
         >
           <Popup>
@@ -104,6 +63,9 @@ export default function LeafletMapBox({ setSelectedMarker, listings, selectedMar
           </Popup>
         </Marker>
       ))}
+
+      {/* 加上动态 FlyTo 控制 */}
+      <FlyToMarker selectedMarker={selectedMarker} />
     </MapContainer>
   );
 }
