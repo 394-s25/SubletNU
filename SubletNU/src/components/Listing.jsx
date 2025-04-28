@@ -52,7 +52,12 @@ function Listing({
               key,
               ...value,
             })
-          );
+          ).filter((listing) => {
+            if (!showOnlyCurrentUser){ // if not showing curr user listings
+              // show all listings not currentUser
+              if (listing.createdBy !== auth.currentUser?.uid) return true;
+            } else return false;
+          });
           setLocalListings(listingsArray);
           setListings(listingsArray);
         } else {
