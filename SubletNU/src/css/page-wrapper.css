@@ -1,28 +1,16 @@
-/* .page-container {
-  display: flex;
-  overflow: hidden;
-  flex-direction: row;
-  height: 100vh;
-
-} */
 .page-container {
   display: flex;
   flex-direction: row;
-  min-height: 100vh; /* ✅用 min-height，防止内容高度小于一屏 */
   width: 100%;
+  min-height: 100vh;
   box-sizing: border-box;
+  overflow: hidden;
 }
-
-/* .page-wrapper {
-  display: flex;
-  flex-direction: row;
-  height: 100vh; 
-  overflow: hidden; 
-} */
 
 
 .page-box {
   flex: 1;
+  display: flex;
   flex-direction: row;
   width: 100%;
   max-width: 1800px;
@@ -30,20 +18,19 @@
   background-color: white;
   overflow: hidden;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-  min-height: 80vh;
   box-sizing: border-box;
 }
 
 
 .page-content {
   flex: 1;
-  padding: 60px 40px;
+
   background-color: #f6efff;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   gap: 24px;
-  overflow-y: auto;
+  overflow: hidden;
   box-sizing: border-box;
 }
 
@@ -64,7 +51,6 @@
 }
 
 
-
 .sidebar button {
   width: 100%;
   padding: 12px 16px;
@@ -81,51 +67,16 @@
   background-color: #e5e7eb;
 }
 
+/* the part of the home page */
 
-@media (max-width: 1000px),
-(orientation: portrait) {
-  .page-container {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .sidebar {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    width: 100%;
-    max-width: 100%;
-    margin: 0 0 24px 0;
-  }
-
-  .sidebar button {
-    flex: 1 1 45%;
-    max-width: 180px;
-    font-size: 14px;
-    padding: 10px 12px;
-  }
-
-  .page-box {
-    flex-direction: column;
-    width: 100%;
-    height: auto;
-  }
-
-  .page-content {
-    padding: 20px;
-    height: auto;
-  }
-}
-
-
-@media (max-width: 480px) {
-  .page-content {
-    padding: 16px;
-  }
-
-  .sidebar button {
-    font-size: 13px;
-    padding: 8px 10px;
-    max-width: 100px;
-  }
+.home-layout {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  width: 100%;
+  min-height: 100vh;
+  background-color: transparent;
+  border-radius: 16px;
+  overflow: hidden;
+  margin: 0 auto;
 }

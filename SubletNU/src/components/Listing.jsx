@@ -207,7 +207,7 @@ function Listing({
         ))
       )}
 
-      {/* 🔥 这里加上 Update Listing 弹窗！！！ */}
+      {/*  Update Listing Modal, having warning */}
       {isUpdateModalOpen && editingListing && (
         <UpdateListingModal
           isOpen={isUpdateModalOpen}

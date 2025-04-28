@@ -65,7 +65,7 @@ export default function UpdateListingModal({
         )}&format=json&limit=1`;
         const geoRes = await fetch(geoUrl, {
           headers: {
-            "User-Agent": "sublet-nu-app/1.0 (minxin@northwestern.edu)",
+            "User-Agent": "sublet-nu-app/1.0 (cs394@northwestern.edu)",
           },
         });
         const geoData = await geoRes.json();

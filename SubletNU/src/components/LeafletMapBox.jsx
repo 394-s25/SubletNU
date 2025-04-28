@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvent } from "react-leaflet";
+import React, { useEffect, useState, useRef } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
@@ -11,21 +11,29 @@ L.Marker.prototype.options.icon = DefaultIcon;
 
 const defaultCenter = { lat: 42.055984, lng: -87.675171 };
 
-function FlyAndHighlight({ selectedMarker }) {
+// can be used to control map movement and popup
+function FlyAndHighlight({ selectedMarker, markerRefs }) {
   const map = useMap();
 
   useEffect(() => {
     if (selectedMarker?.lat && selectedMarker?.lng) {
-      console.log("[Fly] Jumping to:", selectedMarker);
-      map.flyTo([selectedMarker.lat, selectedMarker.lng], 17, { duration: 1.2 });
+      console.log("[Fly] Jump to:", selectedMarker);
+      map.flyTo([selectedMarker.lat, selectedMarker.lng], map.getZoom() > 15 ? map.getZoom() : 16, { duration: 1.2 });
+
+      // open the popup for the selected marker
+      const markerRef = markerRefs.current[selectedMarker.key];
+      if (markerRef) {
+        markerRef.openPopup();
+      }
     }
-  }, [selectedMarker, map]);
+  }, [selectedMarker, map, markerRefs]);
 
   return null;
 }
 
 export default function LeafletMapBox({ listings, selectedMarker, setSelectedMarker }) {
   const [markers, setMarkers] = useState([]);
+  const markerRefs = useRef({}); 
 
   useEffect(() => {
     console.log("[MapBox] Updated listings:", listings);
@@ -46,12 +54,17 @@ export default function LeafletMapBox({ listings, selectedMarker, setSelectedMar
 
       {markers.map((marker, idx) => (
         <Marker
-          key={idx}
+          key={marker.key || idx}
           position={[marker.lat, marker.lng]}
           eventHandlers={{
             click: () => {
               console.log("[Marker Click] Selected:", marker);
               setSelectedMarker(marker);
+            }
+          }}
+          ref={(ref) => {
+            if (ref) {
+              markerRefs.current[marker.key] = ref;
             }
           }}
         >
@@ -64,7 +77,8 @@ export default function LeafletMapBox({ listings, selectedMarker, setSelectedMar
         </Marker>
       ))}
 
-      <FlyAndHighlight selectedMarker={selectedMarker} />
+       {/* //control map movement and popup */}
+      <FlyAndHighlight selectedMarker={selectedMarker} markerRefs={markerRefs} />
     </MapContainer>
   );
 }
