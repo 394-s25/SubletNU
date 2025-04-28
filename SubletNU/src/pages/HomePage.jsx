@@ -96,10 +96,12 @@ export default function HomePage() {
                 setAlertModal={setAlertModal}
                 setAlertModalMessage={setAlertModalMessage}
                 selectedMarker={selectedMarker}
+                
                 isUpdateModalOpen={isUpdateModalOpen}
                 setIsUpdateModalOpen={setIsUpdateModalOpen}
                 editingListing={editingListing}
                 setEditingListing={setEditingListing}
+                setSelectedMarker={setSelectedMarker}
                 listingWrapperClass="listing-card"
               />
             )}

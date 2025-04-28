@@ -1,9 +1,16 @@
-.page-container {
+/* .page-container {
   display: flex;
   overflow: hidden;
   flex-direction: row;
   height: 100vh;
 
+} */
+.page-container {
+  display: flex;
+  flex-direction: row;
+  min-height: 100vh; /* ✅用 min-height，防止内容高度小于一屏 */
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* .page-wrapper {

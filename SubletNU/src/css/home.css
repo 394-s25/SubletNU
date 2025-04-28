@@ -20,7 +20,7 @@
   flex-direction: row;
   flex: 1;
   width: 100%;
-  height: 100%;
+  min-height: 100vh; /* ✅ 用 min-height 而不是 height */
   background-color: transparent;
   border-radius: 16px;
   overflow: hidden;
@@ -32,9 +32,9 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  height: 100vh;
   background-color: #faf7ff;
   box-sizing: border-box;
+  overflow: hidden; /* 防止意外溢出 */
 }
 
 /* 🔥 固定的header部分 */
@@ -48,7 +48,7 @@
 .home-left-list {
   flex: 1;
   overflow-y: auto;
-  padding: 0 24px 24px;
+  padding: 24px 24px 58px;
 }
 
 /* 右边地图 */
@@ -83,7 +83,7 @@
   box-sizing: border-box;
 }
 
-/* Listing 容器 */
+/* Listing列表整体 */
 .listing-container {
   padding: 0;
   display: flex;
@@ -91,13 +91,13 @@
   gap: 24px;
 }
 
-/* 每个房源 */
+/* 每一个 Listing 卡片 */
 .listing-card {
   background: white;
   padding: 20px;
   border-radius: 16px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   cursor: pointer;
 }
 
@@ -106,7 +106,13 @@
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
 }
 
-/* 房源的内容 */
+/* 选中的高亮 */
+.listing-active {
+  border: 2px solid #5b21b6;
+  background-color: #f3e8ff;
+}
+
+/* 小元素字体 */
 .listing-title {
   font-size: 22px;
   font-weight: 700;
@@ -143,11 +149,12 @@
 @media (max-width: 768px) {
   .home-layout {
     flex-direction: column;
+    min-height: auto;
   }
 
   .home-map-container {
-    height: 300px;
     position: relative;
+    height: 300px;
   }
 
   .home-left {

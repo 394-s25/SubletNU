@@ -165,7 +165,7 @@ function Listing({
         filteredListings.map((listing) => (
           <div
             key={listing.key}
-            className="listing-card"
+            className={`listing-card ${selectedMarker?.key === listing.key ? "listing-active" : ""}`}
             onClick={() => handleSelectListing(listing)}
           >
             <h3 className="listing-title">{listing.title || "No title"}</h3>
@@ -206,8 +206,20 @@ function Listing({
           </div>
         ))
       )}
+
+      {/* 🔥 这里加上 Update Listing 弹窗！！！ */}
+      {isUpdateModalOpen && editingListing && (
+        <UpdateListingModal
+          isOpen={isUpdateModalOpen}
+          listing={editingListing}
+          onClose={() => setIsUpdateModalOpen(false)}
+          setAlertModal={setAlertModal}
+          setAlertModalMessage={setAlertModalMessage}
+        />
+      )}
     </div>
   );
+
 }
 
 export default Listing;
