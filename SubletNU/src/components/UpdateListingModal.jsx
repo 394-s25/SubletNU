@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { db } from "../firebase";
 import { ref, update } from "firebase/database";
-import "../css/createList.css"; 
+import "../css/createList.css";
 
 export default function UpdateListingModal({
   isOpen,
@@ -59,7 +59,7 @@ export default function UpdateListingModal({
       };
 
       if (location !== listing.location) {
-        
+
         const geoUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
           location
         )}&format=json&limit=1`;
