@@ -78,15 +78,15 @@
 }
 
 .sidebar button.active {
-  background-color: #f3f4f6; /* 当前页浅灰色 */
+  background-color: #f3f4f6; 
   border-color: #d1d5db;
 }
 
 .sidebar button.active:hover {
-  background-color: #e0e2e7; /* hover 更深一点的灰色 */
+  background-color: #e0e2e7; 
 }
 
-/* 保持你的 hover 规则 */
+
 .sidebar button:hover {
   background-color: #e5e7eb;
 }
