@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { db, auth } from "../firebase";
 import {
   ref,
@@ -29,6 +29,7 @@ function Listing({
   const [listings, setLocalListings] = useState([]);
   const pathLocation = useLocation();
   const pathname = pathLocation.pathname;
+  const listingsRefs = useRef({});
 
   useEffect(() => {
     let listingQuery;
@@ -134,16 +135,6 @@ function Listing({
     setIsUpdateModalOpen(true);
   };
 
-  const handleSelectListing = (listing) => {
-    if (listing.lat && listing.lng) {
-      setSelectedMarker({
-        lat: parseFloat(listing.lat),
-        lng: parseFloat(listing.lng),
-        ...listing,
-      });
-    }
-  };
-
   const safeFilter = filter?.toLowerCase() || "";
   let filteredListings = listings.filter((listing) => {
     if (!showOnlyCurrentUser && listing.createdBy === auth.currentUser?.uid) {
@@ -157,16 +148,17 @@ function Listing({
     });
   });
 
-
-  // if a marker is selected, move it to the top of the filtered list
-  const moveToTop = (array, listing) => {
-    const idx = array.findIndex((element) => element.key == listing.key);
-    if (idx > -1) { //  found  
-      const [item] = array.splice(idx, 1); // remove item
-      array.unshift(item);
-    } 
-    return array;
+  const handleSelectListing = (listing, ref) => {
+    if (listing.lat && listing.lng) {
+      setSelectedMarker({
+        lat: parseFloat(listing.lat),
+        lng: parseFloat(listing.lng),
+        ...listing,
+      });
+    }
+    scrollIntoView(ref);
   };
+
 
   useEffect(() => {
     // console.log("filtered:", filteredListings);
@@ -177,22 +169,23 @@ function Listing({
     setListings(newListings);
   }
 
-  // update marker
+  // if a marker is selected, scroll to see the corresponding selected listing
   useEffect(() => {
     if (selectedMarker){ 
-      const shiftedArray = moveToTop(filteredListings,selectedMarker);
-      setLocalListings(shiftedArray);
-      setListings(shiftedArray);
-      // scroll to top of page to see the selected listing
-      scrollToTop();
+      if (listingsRefs.current[selectedMarker.key]?.current){ // check if it exists in the refs dict
+        // check if the selected marker is the currently selected listing
+        scrollIntoView(listingsRefs.current[selectedMarker.key]);
+      }
     }
   }, [selectedMarker]);
 
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 10,
-      behavior: "smooth"
-    });
+  const scrollIntoView = (ref) => {
+    if (ref?.current){
+      ref.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
   };
 
 
@@ -203,11 +196,17 @@ function Listing({
       {filteredListings.length === 0 ? (
         <p>No listings found.</p>
       ) : (
-        filteredListings.map((listing) => (
+        filteredListings.map((listing) => {
+          if (!listingsRefs.current[listing.key]){
+            listingsRefs.current[listing.key] = React.createRef();
+          }
+
+          return (
           <div
             key={listing.key}
+            ref={listingsRefs.current[listing.key]}
             className={`listing-card ${selectedMarker?.key === listing.key ? "listing-active" : ""}`}
-            onClick={() => handleSelectListing(listing)}
+            onClick={() => handleSelectListing(listing, listingsRefs.current[listing.key])}
           >
             <h3 className="listing-title">{listing.title || "No title"}</h3>
             <p className="listing-date">
@@ -245,7 +244,7 @@ function Listing({
               </button>
             )}
           </div>
-        ))
+        )})
       )}
 
       {/*  Update Listing Modal, having warning */}
