@@ -111,8 +111,8 @@ export default function ProfilePage() {
 
   return (
     <PageWrapper
-      onShowAll={() => {}}
-      onShowUser={() => {}}
+      onShowAll={() => { }}
+      onShowUser={() => { }}
       onCreateNew={() => setIsCreateOpen(true)}
     >
       <div className="profile-header">
