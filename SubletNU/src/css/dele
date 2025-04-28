@@ -1,0 +1,152 @@
+
+
+.home-layout {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  overflow: hidden;
+}
+
+
+.page-box {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  height: auto;
+
+  max-height: none;
+}
+
+.home-left {
+  flex: 1;
+  background-color: #f6efff;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
+
+}
+
+.home-map-container {
+  flex: 1;
+  height: auto;
+  min-height: 400px;
+}
+
+
+@media (max-width: 768px) {
+  .home-map-container {
+    min-height: 300px;
+  }
+}
+
+
+
+.home-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #1f2937;
+  text-align: center;
+  margin-bottom: 24px;
+  word-break: break-word;
+}
+
+
+.home-input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+
+.home-links {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+
+.home-links a {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+  padding: 12px 20px;
+  background-color: #e7e1f3;
+  color: #1f1f1f;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  text-align: center;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  font-size: 16px;
+}
+
+.home-links a:hover {
+  background-color: #5b21b6;
+  color: white;
+  transform: translateY(-2px);
+}
+
+
+@media (max-width: 768px) {
+  .home-layout {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .home-map-container {
+    height: 300px;
+  }
+
+  .home-left {
+    padding: 20px;
+    max-height: none;
+  }
+
+  .home-links a {
+    width: 100%;
+    font-size: 15px;
+    padding: 14px;
+  }
+
+  .home-links {
+    padding: 0 16px;
+  }
+}
+
+
+.listing-toggle-button {
+  padding: 12px 20px;
+  background-color: #5b21b6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+  margin-top: 16px;
+  transition: background-color 0.2s ease;
+}
+
+.listing-toggle-button:hover {
+  background-color: #4c1c9b;
+}
+
+.home-your-listings {
+  margin-top: 24px;
+  width: 100%;
+}

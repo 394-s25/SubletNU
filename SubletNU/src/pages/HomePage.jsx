@@ -7,7 +7,7 @@ import AlertModal from "../components/AlertModal";
 import TopAlert from "../components/TopAlert";
 import LeafletMapBox from "../components/LeafletMapBox";
 import { db, auth } from "../firebase";
-import { ref, onValue } from "firebase/database"; 
+import { ref, onValue, get } from "firebase/database";
 import "../css/home.css";
 
 export default function HomePage() {
@@ -19,9 +19,11 @@ export default function HomePage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isAlertOpen, setAlertModal] = useState(false);
   const [alertModalMessage, setAlertModalMessage] = useState("");
-  const [selectedMarker, setSelectedMarker] = useState({}); 
+  const [selectedMarker, setSelectedMarker] = useState({}); // to be used for filtering so user can see the listing they've just selected
   const [showTopAlert, setTopAlert] = useState(false);
-  // ^to be used for filtering so user can see the listing they've just selected
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [editingListing, setEditingListing] = useState(null);
+  
   const dbMatchReqRef = ref(db, "users/" + auth.currentUser.uid + "/userMatchRequests");
   const dbMatchesRef = ref(db, "users/" + auth.currentUser.uid + "/userMatches");
 
@@ -40,33 +42,22 @@ export default function HomePage() {
   };
 
   return (
-    <div>
-      
-      {showTopAlert && (
-        <TopAlert
-          message="A new request or match has been made. Check your Profile for more information."
-          type="info" // or "error"
-          onClose={() => setTopAlert(false)}
-        />
-      )}
-
-      
-
-      <PageWrapper
-        onShowAll={() => {
-          setShowAllListings(true);
-          setShowUserListings(false);
-        }}
-        onShowUser={() => {
-          setShowAllListings(false);
-          setShowUserListings(true);
-        }}
-        onCreateNew={() => setIsCreateOpen(true)}
-      >
-        
-
-        <div className="home-layout">
-          <div className="home-left">
+    <PageWrapper
+      onShowAll={() => {
+        setShowAllListings(true);
+        setShowUserListings(false);
+      }}
+      onShowUser={() => {
+        setShowAllListings(false);
+        setShowUserListings(true);
+      }}
+      onCreateNew={() => setIsCreateOpen(true)}
+    >
+      <div className="home-layout">
+        {/* 左侧部分 */}
+        <div className="home-left">
+          {/* 固定在顶部 */}
+          <div className="home-left-header">
             <h2 className="home-title">Sublet Listings</h2>
             <input
               type="text"
@@ -75,61 +66,79 @@ export default function HomePage() {
               onChange={(e) => setFilter(e.target.value)}
               className="home-input"
             />
-
-            {showAllListings && (
-
-              <Listing setListings={setListings} 
-                        filter={filter} 
-                        setAlertModal={setAlertModal} 
-                        setAlertModalMessage={setAlertModalMessage}
-                        selectedMarker={selectedMarker}/>
-
-            )}
-
-            {showUserListings && (
-              <Listing setListings={setListings} 
-                        showOnlyCurrentUser={true} 
-                        setAlertModal={setAlertModal} 
-                        setAlertModalMessage={setAlertModalMessage}
-                        selectedMarker={selectedMarker} />
-            )}
-          
           </div>
 
+          {/* 可以滚动 */}
+          <div className="home-left-list">
+            {showAllListings && (
+              <Listing
+                setListings={setListings}
+                filter={filter}
+                setAlertModal={setAlertModal}
+                setAlertModalMessage={setAlertModalMessage}
+                selectedMarker={selectedMarker}
+                setSelectedMarker={setSelectedMarker}
+                listingWrapperClass="listing-card"
+              />
+            )}
+            {showUserListings && (
+              <Listing
+                setListings={setListings}
+                showOnlyCurrentUser={true}
+                setAlertModal={setAlertModal}
+                setAlertModalMessage={setAlertModalMessage}
+                selectedMarker={selectedMarker}
+                
+                isUpdateModalOpen={isUpdateModalOpen}
+                setIsUpdateModalOpen={setIsUpdateModalOpen}
+                editingListing={editingListing}
+                setEditingListing={setEditingListing}
+                setSelectedMarker={setSelectedMarker}
+                listingWrapperClass="listing-card"
+              />
+            )}
+          </div>
+        </div>
 
-          <div className="home-map-container">
-
-
-
-
-
-            <LeafletMapBox
-              setSelectedMarker={setSelectedMarker}
-              listings={listings.filter((l) => l.lat && l.lng)
+        {/* 地图部分 */}
+        <div className="home-map-container">
+          <LeafletMapBox
+            setSelectedMarker={setSelectedMarker}
+            selectedMarker={selectedMarker}
+            listings={listings.filter((l) => l.lat && l.lng)
                 .map((l) => ({
                   lat: parseFloat(l.lat),
                   lng: parseFloat(l.lng),
                   ...l,
                 }))}
-            />
-            
-          </div>
+          />
         </div>
+      </div>
 
-        <CreateListingModal
-          isOpen={isCreateOpen}
-          onClose={() => setIsCreateOpen(false)}
-          setAlertModal={setAlertModal}
-          setAlertModalMessage={setAlertModalMessage}
+      {/* Create Modal */}
+      <CreateListingModal
+        isOpen={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+        setAlertModal={setAlertModal}
+        setAlertModalMessage={setAlertModalMessage}
+      />
+
+      {/* Alert Modal */}
+      <AlertModal
+        isOpen={isAlertOpen}
+        onClose={onAlertClose}
+        message={alertModalMessage}
+      />
+          
+      {showTopAlert && (
+        <TopAlert
+          message="A new request or match has been made. Check your Profile for more information."
+          type="info" // or "error"
+          onClose={() => setTopAlert(false)}
         />
+      )}
+      
+    </PageWrapper>
 
-        <AlertModal 
-          isOpen={isAlertOpen} 
-          onClose={() => onAlertClose()} 
-          message={alertModalMessage}
-        />
-
-      </PageWrapper>
-    </div>
   );
 }
