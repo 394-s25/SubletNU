@@ -50,6 +50,8 @@ export default function HomePage() {
         />
       )}
 
+      
+
       <PageWrapper
         onShowAll={() => {
           setShowAllListings(true);
