@@ -129,7 +129,7 @@ export default function HomePage() {
         onClose={onAlertClose}
         message={alertModalMessage}
       />
-          
+   
       {showTopAlert && (
         <TopAlert
           message="A new request or match has been made. Check your Profile for more information."

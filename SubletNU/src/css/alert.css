@@ -5,7 +5,7 @@
     right: 0;
     padding: 16px;
     text-align: center;
-    color: black;
+    color: white;
     z-index: 1000;
     display: flex;
     justify-content: space-between;
@@ -13,7 +13,7 @@
 }
 
 .top-alert.info {
-    background-color: #d8bdfc;
+    background-color: #5b21b6;
 }
 
 .top-alert.error {
@@ -24,7 +24,7 @@
     margin-left: 20px;
     background: transparent;
     border: none;
-    color: black;
+    color: white;
     font-weight: bold;
     font-size: 18px;
     cursor: pointer;
