@@ -178,14 +178,13 @@ function Listing({ setListings, filter, setAlertModal, setAlertModalMessage, sho
     const idx = array.findIndex((element) => element.key == listing.key);
     if (idx > -1) { //  found  
       const [item] = array.splice(idx, 1); // remove item
-      console.log("elem to move:",item);
       array.unshift(item);
     } 
     return array;
   };
 
   useEffect(() => {
-    console.log("filtered:", filteredListings);
+    // console.log("filtered:", filteredListings);
     if (filteredListings) updateListings(filteredListings);
   }, [filter]);
 
@@ -196,11 +195,20 @@ function Listing({ setListings, filter, setAlertModal, setAlertModalMessage, sho
   // update marker
   useEffect(() => {
     if (selectedMarker){ 
-      console.log("listing chosen marker:", selectedMarker);
-      console.log("list prior:", filteredListings);
-      console.log("Moved:", moveToTop(filteredListings,selectedMarker));
+      const shiftedArray = moveToTop(filteredListings,selectedMarker);
+      setLocalListings(shiftedArray);
+      setListings(shiftedArray);
+      // scroll to top of page to see the selected listing
+      scrollToTop();
     }
   }, [selectedMarker]);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 10,
+      behavior: "smooth"
+    });
+  };
 
 
   // 🔽 UI

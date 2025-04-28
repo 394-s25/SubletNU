@@ -25,24 +25,12 @@ const center = {
 
 export default function LeafletMapBox({ setSelectedMarker, listings }) {
   const [markers, setMarkers] = useState([]);
-  const [selected, setSelected] = useState({}); // the marker object
-
-  const handleMarkerClick = (marker) => {
-    try {
-      setSelectedMarker(marker);
-      setSelected(marker);
-    } catch (error) {
-      console.error("Map click error:", error);
-    }
-  };
 
   useEffect(() => {
     const fetchCoordinates = async () => {
       const results = [];
-      console.log("mapbox inputed:", listings);
 
       for (const listing of listings) {
-        console.log("-->for:",listing);
         if (!listing.location) continue;
         if (listing.lat) {
           results.push(listing);
@@ -72,7 +60,7 @@ export default function LeafletMapBox({ setSelectedMarker, listings }) {
         }
       }
 
-      console.log("mapbox markers:",results);
+      // console.log("mapbox markers:",results);
       setMarkers(results);
     };
 
