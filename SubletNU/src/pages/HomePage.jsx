@@ -22,47 +22,6 @@ export default function HomePage() {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [editingListing, setEditingListing] = useState(null);
 
-  // ^to be used for filtering so user can see the listing they've just selected
-
-  // const filteredListings = listings.filter(
-  //   (listing) =>
-  //     listing.location?.toLowerCase().includes(filter.toLowerCase())
-  // );
-
-
-  // useEffect(() => {
-  //   const fetchListings = async () => {
-  //     try {
-  //       const snapshot = await get(ref(db, "/listings"));
-  //       if (snapshot.exists()) {
-  //         const data = snapshot.val();
-  //         const listingsArray = Object.entries(data).map(([key, value]) => ({
-  //           key,
-  //           ...value,
-  //         }));
-  //         setListings(listingsArray);
-
-  //         const markers = listingsArray
-  //           .filter((l) => l.lat && l.lng)
-  //           .map((l) => ({
-  //             lat: parseFloat(l.lat),
-  //             lng: parseFloat(l.lng),
-  //             ...l,
-  //           }));
-  //         setMapMarkers(markers);
-  //       } else {
-  //         console.warn("No listings found.");
-  //       }
-  //     } catch (err) {
-  //       console.error("Failed to fetch listings:", err);
-  //     }
-  //   };
-
-  //   fetchListings(); 
-  // }, []);
-
-  // when the listings updates, update the map markers
-  
   
   useEffect(() => {
     const delayTimer = setTimeout(() => {
