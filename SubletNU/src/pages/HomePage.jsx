@@ -4,9 +4,10 @@ import Listing from "../components/Listing";
 import PageWrapper from "../components/PageWrapper";
 import CreateListingModal from "../components/CreateListingModel";
 import AlertModal from "../components/AlertModal";
+import TopAlert from "../components/TopAlert";
 import LeafletMapBox from "../components/LeafletMapBox";
-import { db } from "../firebase";
-import { ref, get } from "firebase/database";
+import { db, auth } from "../firebase";
+import { ref, onValue, get } from "firebase/database";
 import "../css/home.css";
 
 export default function HomePage() {
@@ -18,31 +19,22 @@ export default function HomePage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isAlertOpen, setAlertModal] = useState(false);
   const [alertModalMessage, setAlertModalMessage] = useState("");
-  const [selectedMarker, setSelectedMarker] = useState({});
+  const [selectedMarker, setSelectedMarker] = useState({}); // to be used for filtering so user can see the listing they've just selected
+  const [showTopAlert, setTopAlert] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [editingListing, setEditingListing] = useState(null);
+  
+  const dbMatchReqRef = ref(db, "users/" + auth.currentUser.uid + "/userMatchRequests");
+  const dbMatchesRef = ref(db, "users/" + auth.currentUser.uid + "/userMatches");
 
   useEffect(() => {
-    const delayTimer = setTimeout(() => {
-      updateMarkers();
-    }, 2000);
-    return () => clearTimeout(delayTimer);
-  }, [listings]);
+    return onValue(dbMatchesRef, (snapshot) => {
+      if (snapshot.exists()) setTopAlert(true);
+    });
 
-  const updateMarkers = () => {
-    try {
-      const markers = listings
-        .filter((l) => l.lat && l.lng)
-        .map((l) => ({
-          lat: parseFloat(l.lat),
-          lng: parseFloat(l.lng),
-          ...l,
-        }));
-      setMapMarkers(markers);
-    } catch (err) {
-      console.error("Failed to map markers:", err);
-    }
-  };
+  }, [dbMatchesRef]);
+
+
 
   const onAlertClose = () => {
     setAlertModal(false);
@@ -113,9 +105,12 @@ export default function HomePage() {
           <LeafletMapBox
             setSelectedMarker={setSelectedMarker}
             selectedMarker={selectedMarker}
-            listings={mapMarkers.filter((l) =>
-              l.location?.toLowerCase().includes(filter.toLowerCase())
-            )}
+            listings={listings.filter((l) => l.lat && l.lng)
+                .map((l) => ({
+                  lat: parseFloat(l.lat),
+                  lng: parseFloat(l.lng),
+                  ...l,
+                }))}
           />
         </div>
       </div>
@@ -134,6 +129,16 @@ export default function HomePage() {
         onClose={onAlertClose}
         message={alertModalMessage}
       />
+          
+      {showTopAlert && (
+        <TopAlert
+          message="A new request or match has been made. Check your Profile for more information."
+          type="info" // or "error"
+          onClose={() => setTopAlert(false)}
+        />
+      )}
+      
     </PageWrapper>
+
   );
 }

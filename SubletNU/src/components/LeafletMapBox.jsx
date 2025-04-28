@@ -35,9 +35,10 @@ export default function LeafletMapBox({ listings, selectedMarker, setSelectedMar
   const [markers, setMarkers] = useState([]);
   const markerRefs = useRef({}); 
 
+
   useEffect(() => {
-    console.log("[MapBox] Updated listings:", listings);
-    setMarkers(listings);
+    console.log("[MapBox] Updated listings:", listings.filter((item) => item.lat));
+    setMarkers(listings.filter((item) => item.lat));
   }, [listings]);
 
   return (

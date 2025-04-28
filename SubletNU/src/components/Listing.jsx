@@ -157,6 +157,47 @@ function Listing({
     });
   });
 
+
+  // if a marker is selected, move it to the top of the filtered list
+  const moveToTop = (array, listing) => {
+    const idx = array.findIndex((element) => element.key == listing.key);
+    if (idx > -1) { //  found  
+      const [item] = array.splice(idx, 1); // remove item
+      array.unshift(item);
+    } 
+    return array;
+  };
+
+  useEffect(() => {
+    // console.log("filtered:", filteredListings);
+    if (filteredListings) updateListings(filteredListings);
+  }, [filter]);
+
+  const updateListings= (newListings) => {
+    setListings(newListings);
+  }
+
+  // update marker
+  useEffect(() => {
+    if (selectedMarker){ 
+      const shiftedArray = moveToTop(filteredListings,selectedMarker);
+      setLocalListings(shiftedArray);
+      setListings(shiftedArray);
+      // scroll to top of page to see the selected listing
+      scrollToTop();
+    }
+  }, [selectedMarker]);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 10,
+      behavior: "smooth"
+    });
+  };
+
+
+  // 🔽 UI
+
   return (
     <div className="listing-container">
       {filteredListings.length === 0 ? (
