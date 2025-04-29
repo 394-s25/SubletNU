@@ -7,9 +7,7 @@
   justify-content: flex-start;
   gap: 24px;
   overflow-y: auto;
-
 }
-
 
 .profile-box {
   display: flex;
@@ -24,7 +22,6 @@
   background-color: white;
   box-sizing: border-box;
 }
-
 
 .profile-title {
   font-size: 24px;
@@ -57,7 +54,6 @@
   background-color: #5b21b6;
 }
 
-
 @media (max-width: 768px) {
   .profile-box {
     padding: 20px;
@@ -70,4 +66,26 @@
   .logout-button {
     width: 100%;
   }
+}
+
+.add-listing-button {
+  display: block;
+  margin: 0 auto 24px;       
+  padding: 6px 12px;        
+  font-size: 14px;            
+  background-color: #5b21b6;
+  color: #fff;               
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.add-listing-button.small {
+  padding: 6px 12px;  
+  font-size: 14px;
+}
+
+.add-listing-button:hover {
+  background-color: #4c1d95; 
 }
