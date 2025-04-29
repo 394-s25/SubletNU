@@ -15,7 +15,10 @@ const defaultCenter = { lat: 42.055984, lng: -87.675171 };
 function FlyAndHighlight({ selectedMarker, markerRefs }) {
   const map = useMap();
 
+  // fly to the selected marker
+  // and open the popup for the selected marker
   useEffect(() => {
+    // if no marker is selected, do nothing
     if (selectedMarker?.lat && selectedMarker?.lng) {
       console.log("[Fly] Jump to:", selectedMarker);
       map.flyTo([selectedMarker.lat, selectedMarker.lng], map.getZoom() > 15 ? map.getZoom() : 16, { duration: 1.2 });
@@ -33,14 +36,16 @@ function FlyAndHighlight({ selectedMarker, markerRefs }) {
 
 export default function LeafletMapBox({ listings, selectedMarker, setSelectedMarker }) {
   const [markers, setMarkers] = useState([]);
-  const markerRefs = useRef({}); 
+  const markerRefs = useRef({});
 
+  // Update markers when listings change
 
   useEffect(() => {
     console.log("[MapBox] Updated listings:", listings.filter((item) => item.lat));
     setMarkers(listings.filter((item) => item.lat));
   }, [listings]);
 
+  // Update markerRefs when markers change
   return (
     <MapContainer
       center={defaultCenter}
@@ -48,11 +53,13 @@ export default function LeafletMapBox({ listings, selectedMarker, setSelectedMar
       scrollWheelZoom
       style={{ width: "100%", height: "100%" }}
     >
+      {/* // Add OpenStreetMap tile layer */}
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
       />
 
+      {/* // Add markers to the map */}
       {markers.map((marker, idx) => (
         <Marker
           key={marker.key || idx}
@@ -69,6 +76,7 @@ export default function LeafletMapBox({ listings, selectedMarker, setSelectedMar
             }
           }}
         >
+          {/* // Add popup to the marker */}
           <Popup>
             <strong>{marker.title || "Untitled"}</strong><br />
             {marker.location}<br />
@@ -78,7 +86,7 @@ export default function LeafletMapBox({ listings, selectedMarker, setSelectedMar
         </Marker>
       ))}
 
-       {/* //control map movement and popup */}
+      {/* //control map movement and popup */}
       <FlyAndHighlight selectedMarker={selectedMarker} markerRefs={markerRefs} />
     </MapContainer>
   );

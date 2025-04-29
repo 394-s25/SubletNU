@@ -21,7 +21,7 @@ export default function Sidebar({ onShowAll, onShowUser, onCreateNew }) {
         <img src="/logo.png" alt="Logo" />
       </div>
 
-      {/* 按钮们 */}
+      {/* Navigation Buttons */}
       <button
         onClick={() => navigate("/")}
         className={location.pathname === "/" ? "active" : ""}
@@ -41,6 +41,7 @@ export default function Sidebar({ onShowAll, onShowUser, onCreateNew }) {
       </button>
       
 
+      {/* // Show All and Show Your Listings buttons */}
       {isHome && (
         <>
           <button onClick={onShowAll}>Show All Listings</button>
@@ -48,6 +49,7 @@ export default function Sidebar({ onShowAll, onShowUser, onCreateNew }) {
         </>
       )}
 
+      {/* // Logout Button */}
       <button onClick={handleLogout}>
         Log Out
       </button>

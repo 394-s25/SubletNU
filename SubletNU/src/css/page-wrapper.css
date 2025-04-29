@@ -1,3 +1,5 @@
+/* the container of all pages */
+
 .page-container {
   display: flex;
   flex-direction: row;
@@ -8,6 +10,7 @@
 }
 
 
+/* the wrapper of all pages */
 .page-box {
   flex: 1;
   display: flex;
@@ -35,6 +38,7 @@
 }
 
 
+/* the sidebar of all pages */
 .sidebar {
   width: 220px;
   min-width: 180px;
@@ -51,6 +55,7 @@
 }
 
 
+/* make sure the sidebar is sticky */
 .sidebar button {
   width: 100%;
   padding: 12px 16px;
