@@ -56,8 +56,14 @@ function Listing({
             if (!showOnlyCurrentUser){ // if not showing curr user listings
               // show all listings not currentUser
               if (listing.createdBy !== auth.currentUser?.uid) return true;
-            } else return false;
+              else return false;
+            } else {
+              if (listing.createdBy === auth.currentUser?.uid) return true;
+              else return false;
+            }
           });
+          console.log("showing user listings?:", showOnlyCurrentUser);
+          console.log("listings:",listingsArray);
           setLocalListings(listingsArray);
           setListings(listingsArray);
         } else {
