@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { db, auth } from "../firebase";
-import { ref, update, get, onChildAdded } from "firebase/database";
+import { ref, push, update, get, onChildAdded } from "firebase/database";
 import CreateListingModal from "../components/CreateListingModel";
 import AlertModal from "../components/AlertModal";
 import PageWrapper from "../components/PageWrapper";
@@ -74,7 +74,7 @@ export default function ProfilePage() {
 
     await update(ref(db), {
       [ownerPath]: null,
-      [requesterPath]: null
+      [requesterPath]: null,
     });
 
     await update(ref(db), {
@@ -105,14 +105,14 @@ export default function ProfilePage() {
 
   return (
     <PageWrapper
-      onShowAll={() => {}}
-      onShowUser={() => {}}
+      onShowAll={() => { }}
+      onShowUser={() => { }}
       onCreateNew={() => setIsCreateOpen(true)}
     >
-      <h2 className="profile-title">Your Profile</h2>
-      <p className="profile-email">
-        Email: {auth.currentUser.email}
-      </p>
+      <div className="profile-header">
+        <h2 className="profile-title">Your Profile</h2>
+        <p className="profile-email">Email: {auth.currentUser.email}</p>
+      </div>
 
       {/* ←── Small “Add a Listing” button ──→ */}
       <button
@@ -122,89 +122,85 @@ export default function ProfilePage() {
         + Add a Listing
       </button>
 
-      <h2>Your Listings Matches</h2>
-      <h3>Pending</h3>
-      {matchRequests.filter((m) => m.owner === auth.currentUser.uid).length > 0 ? (
-        <ul>
-          {matchRequests.map((match) =>
-            match.owner === auth.currentUser.uid ? (
-              <li key={match.key}>
-                <p>
-                  User {match.requester} wants to sublet your listing "
-                  {match.listingTitle}" at {match.listingLoc}
-                </p>
-                <button onClick={() => handleApproveMatch(match)}>
-                  Approve
-                </button>
-              </li>
-            ) : null
-          )}
-        </ul>
-      ) : (
-        <p>No pending match requests</p>
-      )}
+      <div className="profile-section-grid">
+        <div className="profile-card">
+          <h3>Your Listings Matches</h3>
 
-      <h3>Approved</h3>
-      {matches.filter((m) => m.owner === auth.currentUser.uid).length > 0 ? (
-        <ul>
-          {matches.map((match) =>
-            match.owner === auth.currentUser.uid ? (
-              <li key={match.key}>
-                <p>
-                  You have approved a matching with {match.requester} for
-                  listing "{match.listingTitle}" at {match.listingLoc}
-                </p>
-                <button onClick={() => handleContactOwner(match, true)}>
-                  Contact
-                </button>
-              </li>
-            ) : null
+          <h4>Pending</h4>
+          {matchRequests.filter((m) => m.owner === auth.currentUser.uid).length > 0 ? (
+            matchRequests
+              .filter((m) => m.owner === auth.currentUser.uid)
+              .map((match) => (
+                <div key={match.key} className="profile-item">
+                  User {match.requester} wants to sublet your listing "{match.listingTitle}" at {match.listingLoc}
+                  <button
+                    className="profile-button"
+                    onClick={() => handleApproveMatch(match)}
+                  >
+                    Approve
+                  </button>
+                </div>
+              ))
+          ) : (
+            <p className="empty-message">No pending match requests</p>
           )}
-        </ul>
-      ) : (
-        <p>No approved match requests</p>
-      )}
 
-      <h2>Your Match Request Status</h2>
-      <h3>Pending</h3>
-      {matchRequests.filter((m) => m.requester === auth.currentUser.uid).length >
-      0 ? (
-        <ul>
-          {matchRequests.map((match) =>
-            match.requester === auth.currentUser.uid ? (
-              <li key={match.key}>
-                <p>
-                  Waiting on sublet owner's response for listing "
-                  {match.listingTitle}" at {match.listingLoc}
-                </p>
-              </li>
-            ) : null
+          <h4>Approved</h4>
+          {matches.filter((m) => m.owner === auth.currentUser.uid).length > 0 ? (
+            matches
+              .filter((m) => m.owner === auth.currentUser.uid)
+              .map((match) => (
+                <div key={match.key} className="profile-item">
+                  You have approved a match with {match.requester} for listing "{match.listingTitle}" at {match.listingLoc}
+                  <button
+                    className="profile-button"
+                    onClick={() => handleContactOwner(match, true)}
+                  >
+                    Contact
+                  </button>
+                </div>
+              ))
+          ) : (
+            <p className="empty-message">No approved match requests</p>
           )}
-        </ul>
-      ) : (
-        <p>No pending match requests</p>
-      )}
+        </div>
 
-      <h3>Approved</h3>
-      {matches.filter((m) => m.requester === auth.currentUser.uid).length > 0 ? (
-        <ul>
-          {matches.map((match) =>
-            match.requester === auth.currentUser.uid ? (
-              <li key={match.key}>
-                <p>
-                  Owner of listing "{match.listingTitle}" at {match.listingLoc}{" "}
-                  accepted your match
-                </p>
-                <button onClick={() => handleContactOwner(match, false)}>
-                  Contact
-                </button>
-              </li>
-            ) : null
+        <div className="profile-card">
+          <h3>Your Match Request Status</h3>
+
+          <h4>Pending</h4>
+          {matchRequests.filter((m) => m.requester === auth.currentUser.uid).length > 0 ? (
+            matchRequests
+              .filter((m) => m.requester === auth.currentUser.uid)
+              .map((match) => (
+                <div key={match.key} className="profile-item">
+                  Waiting on sublet owner's response for listing "{match.listingTitle}" at {match.listingLoc}
+                </div>
+              ))
+          ) : (
+            <p className="empty-message">No pending match requests</p>
           )}
-        </ul>
-      ) : (
-        <p>No approved match requests</p>
-      )}
+
+          <h4>Approved</h4>
+          {matches.filter((m) => m.requester === auth.currentUser.uid).length > 0 ? (
+            matches
+              .filter((m) => m.requester === auth.currentUser.uid)
+              .map((match) => (
+                <div key={match.key} className="profile-item">
+                  Owner of listing "{match.listingTitle}" at {match.listingLoc} accepted your match
+                  <button
+                    className="profile-button"
+                    onClick={() => handleContactOwner(match, false)}
+                  >
+                    Contact
+                  </button>
+                </div>
+              ))
+          ) : (
+            <p className="empty-message">No approved match requests</p>
+          )}
+        </div>
+      </div>
 
       <CreateListingModal
         isOpen={isCreateOpen}
