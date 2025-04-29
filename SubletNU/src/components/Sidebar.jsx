@@ -17,9 +17,29 @@ export default function Sidebar({ onShowAll, onShowUser, onCreateNew }) {
 
   return (
     <div className="sidebar">
-      <button onClick={() => navigate("/")}>🏠 Home</button>
-      <button onClick={() => navigate("/profile")}>Profile</button>
-      <button onClick={onCreateNew}>Create New Listing</button>
+      <div className="sidebar-logo">
+        <img src="/logo.png" alt="Logo" />
+      </div>
+
+      {/* 按钮们 */}
+      <button
+        onClick={() => navigate("/")}
+        className={location.pathname === "/" ? "active" : ""}
+      >
+        🏠 Home
+      </button>
+
+      <button
+        onClick={() => navigate("/profile")}
+        className={location.pathname === "/profile" ? "active" : ""}
+      >
+        Profile
+      </button>
+
+      <button onClick={onCreateNew}>
+        Create New Listing
+      </button>
+      
 
       {isHome && (
         <>
@@ -28,7 +48,9 @@ export default function Sidebar({ onShowAll, onShowUser, onCreateNew }) {
         </>
       )}
 
-      <button onClick={handleLogout}>Log Out</button>
+      <button onClick={handleLogout}>
+        Log Out
+      </button>
     </div>
   );
 }

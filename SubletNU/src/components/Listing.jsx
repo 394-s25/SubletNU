@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { db, auth } from "../firebase";
 import {
   ref,
@@ -11,18 +11,28 @@ import {
   update,
 } from "firebase/database";
 import { useLocation } from "react-router-dom";
+import UpdateListingModal from "./UpdateListingModal";
 
-
-function Listing({ setListings, filter, setAlertModal, setAlertModalMessage, showOnlyCurrentUser = false, selectedMarker= null }) {
-
+function Listing({
+  setListings,
+  filter,
+  setAlertModal,
+  setAlertModalMessage,
+  isUpdateModalOpen,
+  setIsUpdateModalOpen,
+  editingListing,
+  setEditingListing,
+  showOnlyCurrentUser = false,
+  selectedMarker = null,
+  setSelectedMarker = () => {},
+}) {
   const [listings, setLocalListings] = useState([]);
   const pathLocation = useLocation();
   const pathname = pathLocation.pathname;
+  const listingsRefs = useRef({});
 
-  //  Fetch listings from DB
   useEffect(() => {
     let listingQuery;
-
     if (showOnlyCurrentUser || pathname === "/profile") {
       listingQuery = query(
         ref(db, "users/" + auth.currentUser.uid + "/userListings"),
@@ -42,7 +52,12 @@ function Listing({ setListings, filter, setAlertModal, setAlertModalMessage, sho
               key,
               ...value,
             })
-          );
+          ).filter((listing) => {
+            if (!showOnlyCurrentUser){ // if not showing curr user listings
+              // show all listings not currentUser
+              if (listing.createdBy !== auth.currentUser?.uid) return true;
+            } else return false;
+          });
           setLocalListings(listingsArray);
           setListings(listingsArray);
         } else {
@@ -59,8 +74,6 @@ function Listing({ setListings, filter, setAlertModal, setAlertModalMessage, sho
     return () => unsubscribe();
   }, [pathname, showOnlyCurrentUser]);
 
-
-  //  Request a match
   const handleRequestMatch = async (listing) => {
     try {
       const owner = listing.createdBy;
@@ -68,37 +81,25 @@ function Listing({ setListings, filter, setAlertModal, setAlertModalMessage, sho
       const ownerContact = listing.contact;
       const listingLoc = listing.location;
       const listingTitle = listing.title;
-      // sublet owner can't request their own sublet
+
       if (owner === auth.currentUser.uid) {
         setAlertModalMessage("You can't match with your own listing!");
         setAlertModal(true);
         return;
       }
 
-      // check if this match has been requested before
-      // it has been requested before if, there exists a matchRequest under 
-      //    this user that has this listingId
-
       const requesterRef = ref(db, "users/" + auth.currentUser.uid + "/userMatchRequests");
-      try {
-        // get the corresponding match
-        const requesterSnap = await get(requesterRef);
-        if (requesterSnap.exists()){
-          // userMatchRequest are in the format matchKey : listingId
-          // check the values for duplicates
-          const snapValues = Object.values(requesterSnap.val());
-          const foundDuplicate = snapValues.some(id => id === listingId);
-          let foundDuplicateMatch = false;
-          const matchSnap = await get(ref(db, "users/" + auth.currentUser.uid + "/userMatches"));
-          if (matchSnap.exists()) foundDuplicateMatch = Object.values(matchSnap.val()).some(id => id === listingId);
-          if (foundDuplicate || foundDuplicateMatch){
-            setAlertModalMessage("A request or match has alreay been made for this sublet. Check your profile for request responses!");
-            setAlertModal(true);
-            return;
-          } 
+      const requesterSnap = await get(requesterRef);
+      if (requesterSnap.exists()) {
+        const snapValues = Object.values(requesterSnap.val());
+        const foundDuplicate = snapValues.some((id) => id === listingId);
+        const matchSnap = await get(ref(db, "users/" + auth.currentUser.uid + "/userMatches"));
+        const foundDuplicateMatch = matchSnap.exists() && Object.values(matchSnap.val()).some((id) => id === listingId);
+        if (foundDuplicate || foundDuplicateMatch) {
+          setAlertModalMessage("You already requested or matched this sublet.");
+          setAlertModal(true);
+          return;
         }
-      } catch (err) {
-        console.error("Error getting userMatchRequest data:", err);
       }
 
       const matchRequest = {
@@ -118,53 +119,32 @@ function Listing({ setListings, filter, setAlertModal, setAlertModalMessage, sho
       matchRequest.key = matchKey;
       await set(newMatchRef, matchRequest);
 
-      // update user matchRequest references
       const updates = {};
-
-
       updates["/users/" + owner + "/userMatchRequests/" + matchKey] = listingId;
       updates["/users/" + auth.currentUser.uid + "/userMatchRequests/" + matchKey] = listingId;
 
-      update(ref(db), updates)
-        .then(async() => {
-            console.log("Match added successfully", matchKey);
-        })
-        .catch((error) => console.error("Error updating db with match:", error));
-
+      await update(ref(db), updates);
 
       setAlertModalMessage("Match request sent!");
       setAlertModal(true);
 
     } catch (error) {
-      setAlertModalMessage("Match Request could not be sent.");
+      setAlertModalMessage("Failed to send match request.");
       setAlertModal(true);
-      console.error("Error sending match request:", error);
+      console.error("Error:", error);
     }
   };
 
-
-
-
   const updateListing = (listing) => {
-    const message = "Listing update coming soon! ID: " + listing.key;
-    setAlertModalMessage(message);
-    setAlertModal(true);
-    // Optional: Redirect to edit page or open form
+    setEditingListing(listing);
+    setIsUpdateModalOpen(true);
   };
 
-  //
-  // Filtering the Listings
-  //
-
-  // console.log("Listings", listings); // 👈 This prints the key
   const safeFilter = filter?.toLowerCase() || "";
-
   let filteredListings = listings.filter((listing) => {
-    // skip own listings
     if (!showOnlyCurrentUser && listing.createdBy === auth.currentUser?.uid) {
       return false;
     }
-
     return Object.values(listing).some((value) => {
       if (typeof value === "string" || typeof value === "number") {
         return value.toString().toLowerCase().includes(safeFilter);
@@ -173,19 +153,20 @@ function Listing({ setListings, filter, setAlertModal, setAlertModalMessage, sho
     });
   });
 
-  // if a marker is selected, move it to the top of the filtered list
-  const moveToTop = (array, listing) => {
-    const idx = array.findIndex((element) => element.key == listing.key);
-    if (idx > -1) { //  found  
-      const [item] = array.splice(idx, 1); // remove item
-      console.log("elem to move:",item);
-      array.unshift(item);
-    } 
-    return array;
+  const handleSelectListing = (listing, ref) => {
+    if (listing.lat && listing.lng) {
+      setSelectedMarker({
+        lat: parseFloat(listing.lat),
+        lng: parseFloat(listing.lng),
+        ...listing,
+      });
+    }
+    scrollIntoView(ref);
   };
 
+
   useEffect(() => {
-    console.log("filtered:", filteredListings);
+    // console.log("filtered:", filteredListings);
     if (filteredListings) updateListings(filteredListings);
   }, [filter]);
 
@@ -193,65 +174,97 @@ function Listing({ setListings, filter, setAlertModal, setAlertModalMessage, sho
     setListings(newListings);
   }
 
-  // update marker
+  // if a marker is selected, scroll to see the corresponding selected listing
   useEffect(() => {
     if (selectedMarker){ 
-      console.log("listing chosen marker:", selectedMarker);
-      console.log("list prior:", filteredListings);
-      console.log("Moved:", moveToTop(filteredListings,selectedMarker));
+      if (listingsRefs.current[selectedMarker.key]?.current){ // check if it exists in the refs dict
+        // check if the selected marker is the currently selected listing
+        scrollIntoView(listingsRefs.current[selectedMarker.key]);
+      }
     }
   }, [selectedMarker]);
 
+  const scrollIntoView = (ref) => {
+    if (ref?.current){
+      ref.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  };
+
 
   // 🔽 UI
+
   return (
-    <div
-      style={{
-        height: "500px",
-        overflowY: "auto",
-        boxSizing: "border-box",
-        paddingBottom: "300px",
-      }}
-    >
-      {listings.length === 0 ? (
+    <div className="listing-container">
+      {filteredListings.length === 0 ? (
         <p>No listings found.</p>
       ) : (
-        <ul style={{ margin: 0, padding: 0 }}>
-          {filteredListings.map((listing) => (
-            <li
-              key={listing.key}
-              style={{
-                padding: "10px",
-                borderBottom: "1px solid #eee",
-              }}
-            >
-              <h3>{listing.title || "No title"}</h3>
-              <p>
-                {listing.startDate} to {listing.endDate}
-              </p>
-              <p>Location: {listing.location || "Unknown"}</p>
-              <p>Price: ${listing.price || "?"}/month</p>
-              <p>{listing.description || "No description"}</p>
+        filteredListings.map((listing) => {
+          if (!listingsRefs.current[listing.key]){
+            listingsRefs.current[listing.key] = React.createRef();
+          }
 
-              {pathname === "/" && !showOnlyCurrentUser ? (
-                <button
-                  onClick={() =>
-                    handleRequestMatch(listing)
-                  }
-                >
-                  Request Match
-                </button>
-              ) : pathname === "/profile" || showOnlyCurrentUser ? (
-                <button onClick={() => updateListing(listing)}>
-                  Update Listing
-                </button>
-              ) : null}
-            </li>
-          ))}
-        </ul>
+          return (
+          <div
+            key={listing.key}
+            ref={listingsRefs.current[listing.key]}
+            className={`listing-card ${selectedMarker?.key === listing.key ? "listing-active" : ""}`}
+            onClick={() => handleSelectListing(listing, listingsRefs.current[listing.key])}
+          >
+            <h3 className="listing-title">{listing.title || "No title"}</h3>
+            <p className="listing-date">
+              {listing.startDate} → {listing.endDate}
+            </p>
+            <p className="listing-location">
+              📍 {listing.location || "Unknown"}
+            </p>
+            <p className="listing-price">
+              💵 ${listing.price || "?"}/month
+            </p>
+            <p className="listing-description">
+              {listing.description || "No description available"}
+            </p>
+
+            {pathname === "/" && !showOnlyCurrentUser ? (
+              <button
+                className="listing-action-button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRequestMatch(listing);
+                }}
+              >
+                Request Match
+              </button>
+            ) : (pathname === "/profile" || showOnlyCurrentUser) && (
+              <button
+                className="listing-action-button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  updateListing(listing);
+                }}
+              >
+                Update Listing
+              </button>
+            )}
+          </div>
+        )})
+      )}
+
+      {/*  Update Listing Modal, having warning */}
+      {isUpdateModalOpen && editingListing && (
+        <UpdateListingModal
+          isOpen={isUpdateModalOpen}
+          listing={editingListing}
+          onClose={() => setIsUpdateModalOpen(false)}
+          setAlertModal={setAlertModal}
+          setAlertModalMessage={setAlertModalMessage}
+        />
       )}
     </div>
   );
+
 }
 
 export default Listing;

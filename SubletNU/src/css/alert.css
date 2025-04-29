@@ -1,0 +1,31 @@
+.top-alert {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 16px;
+    text-align: center;
+    color: white;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.top-alert.info {
+    background-color: #5b21b6;
+}
+
+.top-alert.error {
+    background-color: #f44336; /* red */
+}
+
+.close-button {
+    margin-left: 20px;
+    background: transparent;
+    border: none;
+    color: white;
+    font-weight: bold;
+    font-size: 18px;
+    cursor: pointer;
+}

@@ -4,9 +4,10 @@ import Listing from "../components/Listing";
 import PageWrapper from "../components/PageWrapper";
 import CreateListingModal from "../components/CreateListingModel";
 import AlertModal from "../components/AlertModal";
+import TopAlert from "../components/TopAlert";
 import LeafletMapBox from "../components/LeafletMapBox";
-import { db } from "../firebase";
-import { ref, get } from "firebase/database"; 
+import { db, auth } from "../firebase";
+import { ref, onValue, get } from "firebase/database";
 import "../css/home.css";
 
 export default function HomePage() {
@@ -18,75 +19,22 @@ export default function HomePage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isAlertOpen, setAlertModal] = useState(false);
   const [alertModalMessage, setAlertModalMessage] = useState("");
-  const [selectedMarker, setSelectedMarker] = useState({}); 
-  // ^to be used for filtering so user can see the listing they've just selected
-
-  // const filteredListings = listings.filter(
-  //   (listing) =>
-  //     listing.location?.toLowerCase().includes(filter.toLowerCase())
-  // );
-
-
-  // useEffect(() => {
-  //   const fetchListings = async () => {
-  //     try {
-  //       const snapshot = await get(ref(db, "/listings"));
-  //       if (snapshot.exists()) {
-  //         const data = snapshot.val();
-  //         const listingsArray = Object.entries(data).map(([key, value]) => ({
-  //           key,
-  //           ...value,
-  //         }));
-  //         setListings(listingsArray);
-
-  //         const markers = listingsArray
-  //           .filter((l) => l.lat && l.lng)
-  //           .map((l) => ({
-  //             lat: parseFloat(l.lat),
-  //             lng: parseFloat(l.lng),
-  //             ...l,
-  //           }));
-  //         setMapMarkers(markers);
-  //       } else {
-  //         console.warn("No listings found.");
-  //       }
-  //     } catch (err) {
-  //       console.error("Failed to fetch listings:", err);
-  //     }
-  //   };
-
-  //   fetchListings(); 
-  // }, []);
-
-  // when the listings updates, update the map markers
+  const [selectedMarker, setSelectedMarker] = useState({}); // to be used for filtering so user can see the listing they've just selected
+  const [showTopAlert, setTopAlert] = useState(false);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [editingListing, setEditingListing] = useState(null);
   
-  
+  const dbMatchReqRef = ref(db, "users/" + auth.currentUser.uid + "/userMatchRequests");
+  const dbMatchesRef = ref(db, "users/" + auth.currentUser.uid + "/userMatches");
+
   useEffect(() => {
-    const delayTimer = setTimeout(() => {
-      console.log("listings has changed");
-      updateMarkers();
-    }, 2000);
+    return onValue(dbMatchesRef, (snapshot) => {
+      if (snapshot.exists()) setTopAlert(true);
+    });
 
-    return () => clearTimeout(delayTimer);
+  }, [dbMatchesRef]);
 
-  },[listings]);
 
-  const updateMarkers = () => {
-    try {
-      const markers = listings.filter((l) => l.lat && l.lng)
-        .map((l) => ({
-          lat: parseFloat(l.lat),
-          lng: parseFloat(l.lng),
-          ...l,
-        }));
-      setMapMarkers(markers);
-      console.log("listings:", listings);
-      console.log("markers:",markers);
-      
-    } catch (err) {
-      console.error("Failed to map markers:", err);
-    }
-  }
 
   const onAlertClose = () => {
     setAlertModal(false);
@@ -106,51 +54,68 @@ export default function HomePage() {
       onCreateNew={() => setIsCreateOpen(true)}
     >
       <div className="home-layout">
+        {/* 左侧部分 */}
         <div className="home-left">
-          <h2 className="home-title">Sublet Listings</h2>
-          <input
-            type="text"
-            placeholder="Search listing by keywords"
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="home-input"
-          />
+          {/* 固定在顶部 */}
+          <div className="home-left-header">
+            <h2 className="home-title">Sublet Listings</h2>
+            <input
+              type="text"
+              placeholder="Search listing by keywords"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="home-input"
+            />
+          </div>
 
-          {showAllListings && (
-
-            <Listing setListings={setListings} 
-                      filter={filter} 
-                      setAlertModal={setAlertModal} 
-                      setAlertModalMessage={setAlertModalMessage}
-                      selectedMarker={selectedMarker}/>
-
-          )}
-
-          {showUserListings && (
-            <Listing setListings={setListings} 
-                      showOnlyCurrentUser={true} 
-                      setAlertModal={setAlertModal} 
-                      setAlertModalMessage={setAlertModalMessage}
-                      selectedMarker={selectedMarker} />
-          )}
-        
+          {/* 可以滚动 */}
+          <div className="home-left-list">
+            {showAllListings && (
+              <Listing
+                setListings={setListings}
+                filter={filter}
+                setAlertModal={setAlertModal}
+                setAlertModalMessage={setAlertModalMessage}
+                selectedMarker={selectedMarker}
+                setSelectedMarker={setSelectedMarker}
+                listingWrapperClass="listing-card"
+              />
+            )}
+            {showUserListings && (
+              <Listing
+                setListings={setListings}
+                showOnlyCurrentUser={true}
+                setAlertModal={setAlertModal}
+                setAlertModalMessage={setAlertModalMessage}
+                selectedMarker={selectedMarker}
+                
+                isUpdateModalOpen={isUpdateModalOpen}
+                setIsUpdateModalOpen={setIsUpdateModalOpen}
+                editingListing={editingListing}
+                setEditingListing={setEditingListing}
+                setSelectedMarker={setSelectedMarker}
+                listingWrapperClass="listing-card"
+              />
+            )}
+          </div>
         </div>
 
-
+        {/* 地图部分 */}
         <div className="home-map-container">
-
-
-
-
           <LeafletMapBox
             setSelectedMarker={setSelectedMarker}
-            listings={mapMarkers.filter((l) =>
-              l.location?.toLowerCase().includes(filter.toLowerCase())
-            )}
+            selectedMarker={selectedMarker}
+            listings={listings.filter((l) => l.lat && l.lng)
+                .map((l) => ({
+                  lat: parseFloat(l.lat),
+                  lng: parseFloat(l.lng),
+                  ...l,
+                }))}
           />
         </div>
       </div>
 
+      {/* Create Modal */}
       <CreateListingModal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
@@ -158,11 +123,22 @@ export default function HomePage() {
         setAlertModalMessage={setAlertModalMessage}
       />
 
-      <AlertModal 
-        isOpen={isAlertOpen} 
-        onClose={() => onAlertClose()} 
+      {/* Alert Modal */}
+      <AlertModal
+        isOpen={isAlertOpen}
+        onClose={onAlertClose}
         message={alertModalMessage}
       />
+   
+      {showTopAlert && (
+        <TopAlert
+          message="A new request or match has been made. Check your Profile for more information."
+          type="info" // or "error"
+          onClose={() => setTopAlert(false)}
+        />
+      )}
+      
     </PageWrapper>
+
   );
 }
