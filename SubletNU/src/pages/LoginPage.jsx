@@ -28,7 +28,11 @@ export default function LoginPage() {
       <div className="login-box">
 
         <div className="login-left">
-          <h2 className="login-title">Login with your Northwestern Email</h2>
+          <p><strong>List it. Rent it. Sublet it.</strong></p>
+          <img className="logo-icon" src="../logo.png" alt="SubletNU Logo"/>
+          <h3>Long and short term subletting made for NU students by NU students</h3>
+          
+          <h4 className="login-title">Login with your Northwestern Email</h4>
           <button className="login-button" onClick={handleLogin}>
             <img
               src="https://www.svgrepo.com/show/475656/google-color.svg"
