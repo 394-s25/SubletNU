@@ -23,7 +23,7 @@ export default function HomePage() {
   const [showTopAlert, setTopAlert] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [editingListing, setEditingListing] = useState(null);
-  
+
   const dbMatchReqRef = ref(db, "users/" + auth.currentUser.uid + "/userMatchRequests");
   const dbMatchesRef = ref(db, "users/" + auth.currentUser.uid + "/userMatches");
 
@@ -54,9 +54,9 @@ export default function HomePage() {
       onCreateNew={() => setIsCreateOpen(true)}
     >
       <div className="home-layout">
-        {/* 左侧部分 */}
+        {/* left part */}
         <div className="home-left">
-          {/* 固定在顶部 */}
+          {/* header */}
           <div className="home-left-header">
             <h2 className="home-title">Sublet Listings</h2>
             <input
@@ -68,7 +68,7 @@ export default function HomePage() {
             />
           </div>
 
-          {/* 可以滚动 */}
+          {/* we can use this to show the listings that are filtered by the search bar */}
           <div className="home-left-list">
             {showAllListings && (
               <Listing
@@ -88,7 +88,7 @@ export default function HomePage() {
                 setAlertModal={setAlertModal}
                 setAlertModalMessage={setAlertModalMessage}
                 selectedMarker={selectedMarker}
-                
+
                 isUpdateModalOpen={isUpdateModalOpen}
                 setIsUpdateModalOpen={setIsUpdateModalOpen}
                 editingListing={editingListing}
@@ -100,17 +100,17 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* 地图部分 */}
+        {/* map part */}
         <div className="home-map-container">
           <LeafletMapBox
             setSelectedMarker={setSelectedMarker}
             selectedMarker={selectedMarker}
             listings={listings.filter((l) => l.lat && l.lng)
-                .map((l) => ({
-                  lat: parseFloat(l.lat),
-                  lng: parseFloat(l.lng),
-                  ...l,
-                }))}
+              .map((l) => ({
+                lat: parseFloat(l.lat),
+                lng: parseFloat(l.lng),
+                ...l,
+              }))}
           />
         </div>
       </div>
@@ -129,7 +129,8 @@ export default function HomePage() {
         onClose={onAlertClose}
         message={alertModalMessage}
       />
-   
+
+      {/* // Top Alert */}
       {showTopAlert && (
         <TopAlert
           message="A new request or match has been made. Check your Profile for more information."
@@ -137,7 +138,7 @@ export default function HomePage() {
           onClose={() => setTopAlert(false)}
         />
       )}
-      
+
     </PageWrapper>
 
   );

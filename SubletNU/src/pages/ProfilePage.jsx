@@ -14,7 +14,10 @@ export default function ProfilePage() {
   const [isAlertOpen, setAlertModal] = useState(false);
   const [alertModalMessage, setAlertModalMessage] = useState("");
 
-  const dbMatchReqRef = ref(db, "users/" + auth.currentUser.uid + "/userMatchRequests");
+  const dbMatchReqRef = ref(
+    db,
+    "users/" + auth.currentUser.uid + "/userMatchRequests"
+  );
   const dbMatchesRef = ref(db, "users/" + auth.currentUser.uid + "/userMatches");
 
   useEffect(() => {
@@ -22,41 +25,37 @@ export default function ProfilePage() {
     let unsubscribeMatchAdded = null;
 
     try {
-      unsubscribeReqAdded = onChildAdded(dbMatchReqRef, (snapshot) => {
-        const data = snapshot.key;
-        if (!matchRequestsIds.includes(data)) {
-          setRequestIds((prev) => [...prev, data]);
-          const matchRef = ref(db, "matches/" + data);
-          get(matchRef).then((snap) => {
-            if (snap.exists()) {
-              const dbMatch = snap.val();
-              setRequests((prev) => {
-                const matchExists = prev.some((match) => match.key === dbMatch.key);
-                if (!matchExists) return [...prev, dbMatch];
-                return prev;
-              });
+      unsubscribeReqAdded = onChildAdded(dbMatchReqRef, (snap) => {
+        const key = snap.key;
+        if (!matchRequestsIds.includes(key)) {
+          setRequestIds((prev) => [...prev, key]);
+          get(ref(db, "matches/" + key)).then((s) => {
+            if (s.exists()) {
+              const match = s.val();
+              setRequests((prev) =>
+                prev.find((m) => m.key === match.key) ? prev : [...prev, match]
+              );
             }
           });
         }
       });
     } catch (err) {
-      console.error("Error onChildAdded for adding a new match req:", err);
+      console.error("Error onChildAdded for match requests:", err);
     }
 
     try {
-      unsubscribeMatchAdded = onChildAdded(dbMatchesRef, (snapshot) => {
-        const data = snapshot.key;
-        if (!data) return;
-        const dbRef = ref(db, "matches/" + data);
-        get(dbRef).then((snap) => {
-          if (snap.val()) {
-            setMatches((prev) => {
-              const alreadyIn = prev.find((m) => m.key === data);
-              if (!alreadyIn) return [...prev, snap.val()];
-              return prev;
-            });
-          }
-        });
+      unsubscribeMatchAdded = onChildAdded(dbMatchesRef, (snap) => {
+        const key = snap.key;
+        if (key) {
+          get(ref(db, "matches/" + key)).then((s) => {
+            const match = s.val();
+            if (match) {
+              setMatches((prev) =>
+                prev.find((m) => m.key === key) ? prev : [...prev, match]
+              );
+            }
+          });
+        }
       });
     } catch (err) {
       console.error("Error onChildAdded for match data:", err);
@@ -66,40 +65,35 @@ export default function ProfilePage() {
       if (unsubscribeReqAdded) unsubscribeReqAdded();
       if (unsubscribeMatchAdded) unsubscribeMatchAdded();
     };
-  }, [dbMatchReqRef, dbMatchesRef]);
+  }, [dbMatchReqRef, dbMatchesRef, matchRequestsIds]);
 
   const handleApproveMatch = async (matchObj) => {
     await update(ref(db, "matches/" + matchObj.key), { approved: "true" });
-    const ownerPath = "users/" + matchObj.owner + "/userMatchRequests/" + matchObj.key;
-    const requesterPath = "users/" + matchObj.requester + "/userMatchRequests/" + matchObj.key;
+    const ownerPath = `users/${matchObj.owner}/userMatchRequests/${matchObj.key}`;
+    const requesterPath = `users/${matchObj.requester}/userMatchRequests/${matchObj.key}`;
+
     await update(ref(db), {
       [ownerPath]: null,
       [requesterPath]: null,
     });
 
-    await updateMatch(matchObj);
+    await update(ref(db), {
+      [`users/${matchObj.owner}/userMatches/${matchObj.key}`]: matchObj.listingId,
+      [`users/${matchObj.requester}/userMatches/${matchObj.key}`]: matchObj.listingId
+    });
+
     setMatches((prev) => [...prev, matchObj]);
-    setRequestIds((prev) => prev.filter((item) => item !== matchObj.key));
-    setRequests((prev) => prev.filter((item) => item.key !== matchObj.key));
+    setRequestIds((prev) => prev.filter((id) => id !== matchObj.key));
+    setRequests((prev) => prev.filter((m) => m.key !== matchObj.key));
 
     setAlertModalMessage("Match Approved. Email sent.");
     setAlertModal(true);
   };
 
-  const updateMatch = async (matchObj) => {
-    await update(ref(db), {
-      ["users/" + matchObj.owner + "/userMatches/" + matchObj.key]: matchObj.listingId,
-      ["users/" + matchObj.requester + "/userMatches/" + matchObj.key]: matchObj.listingId,
-    });
-  };
-
   const handleContactOwner = (match, isOwner) => {
-    let message = "";
-    if (isOwner) {
-      message = "Here is your sublet requester's email: " + match.requesterContact;
-    } else {
-      message = "Here is the sublet owner's email: " + match.ownerContact;
-    }
+    const message = isOwner
+      ? `Here is your sublet requester's email: ${match.requesterContact}`
+      : `Here is the sublet owner's email: ${match.ownerContact}`;
     setAlertModalMessage(message);
     setAlertModal(true);
   };
@@ -120,8 +114,15 @@ export default function ProfilePage() {
         <p className="profile-email">Email: {auth.currentUser.email}</p>
       </div>
 
+      {/* ←── Small “Add a Listing” button ──→ */}
+      <button
+        className="add-listing-button small"
+        onClick={() => setIsCreateOpen(true)}
+      >
+        + Add a Listing
+      </button>
+
       <div className="profile-section-grid">
-        {/* 左边：你的 Listings Matches */}
         <div className="profile-card">
           <h3>Your Listings Matches</h3>
 
@@ -164,7 +165,6 @@ export default function ProfilePage() {
           )}
         </div>
 
-        {/* 右边：你的 Match Request Status */}
         <div className="profile-card">
           <h3>Your Match Request Status</h3>
 

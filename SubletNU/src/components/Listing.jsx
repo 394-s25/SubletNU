@@ -24,7 +24,7 @@ function Listing({
   setEditingListing,
   showOnlyCurrentUser = false,
   selectedMarker = null,
-  setSelectedMarker = () => {},
+  setSelectedMarker = () => { },
 }) {
   const [listings, setLocalListings] = useState([]);
   const pathLocation = useLocation();
@@ -33,6 +33,7 @@ function Listing({
 
   useEffect(() => {
     let listingQuery;
+    // Determine the query based on the current path
     if (showOnlyCurrentUser || pathname === "/profile") {
       listingQuery = query(
         ref(db, "users/" + auth.currentUser.uid + "/userListings"),
@@ -42,6 +43,7 @@ function Listing({
       listingQuery = query(ref(db, "listings"), orderByChild("createdAt"));
     }
 
+    // Listen for changes in the listings
     const unsubscribe = onValue(
       listingQuery,
       (snapshot) => {
@@ -53,17 +55,19 @@ function Listing({
               ...value,
             })
           ).filter((listing) => {
-            if (!showOnlyCurrentUser){ // if not showing curr user listings
-              // show all listings not currentUser
+            if (!showOnlyCurrentUser) {
               if (listing.createdBy !== auth.currentUser?.uid) return true;
-            } else return false;
+              else return false;
+            } else {
+              if (listing.createdBy === auth.currentUser?.uid) return true;
+              else return false;
+            }
           });
           setLocalListings(listingsArray);
           setListings(listingsArray);
         } else {
           setLocalListings([]);
           setListings([]);
-          console.log("No listings found.");
         }
       },
       (error) => {
@@ -74,6 +78,8 @@ function Listing({
     return () => unsubscribe();
   }, [pathname, showOnlyCurrentUser]);
 
+  // Function to handle match request
+  // This function is called when the user clicks on the "Request Match" button
   const handleRequestMatch = async (listing) => {
     try {
       const owner = listing.createdBy;
@@ -82,12 +88,14 @@ function Listing({
       const listingLoc = listing.location;
       const listingTitle = listing.title;
 
+      // Check if the user is trying to match with their own listing
       if (owner === auth.currentUser.uid) {
         setAlertModalMessage("You can't match with your own listing!");
         setAlertModal(true);
         return;
       }
 
+      // Check if the user has already requested or matched this listing
       const requesterRef = ref(db, "users/" + auth.currentUser.uid + "/userMatchRequests");
       const requesterSnap = await get(requesterRef);
       if (requesterSnap.exists()) {
@@ -102,6 +110,7 @@ function Listing({
         }
       }
 
+      // Create the match request object
       const matchRequest = {
         listingId,
         listingTitle,
@@ -114,32 +123,52 @@ function Listing({
         approved: false,
       };
 
+      // Push the match request to the database
       const newMatchRef = push(ref(db, "matches"));
       const matchKey = newMatchRef.key;
       matchRequest.key = matchKey;
       await set(newMatchRef, matchRequest);
 
+      // Update the user's match requests
       const updates = {};
       updates["/users/" + owner + "/userMatchRequests/" + matchKey] = listingId;
       updates["/users/" + auth.currentUser.uid + "/userMatchRequests/" + matchKey] = listingId;
 
       await update(ref(db), updates);
 
+      // Show success message
       setAlertModalMessage("Match request sent!");
       setAlertModal(true);
-
     } catch (error) {
+      console.error("Error sending match request:", error);
       setAlertModalMessage("Failed to send match request.");
       setAlertModal(true);
-      console.error("Error:", error);
     }
   };
 
+  // Function to update listing
   const updateListing = (listing) => {
     setEditingListing(listing);
     setIsUpdateModalOpen(true);
   };
 
+  // Function to delete listing
+  const handleDeleteListing = async (listingKey) => {
+    try {
+      const userId = auth.currentUser.uid;
+      await set(ref(db, `listings/${listingKey}`), null);
+      await set(ref(db, `users/${userId}/userListings/${listingKey}`), null);
+
+      setAlertModalMessage("Listing deleted.");
+      setAlertModal(true);
+    } catch (error) {
+      console.error("Error deleting listing:", error);
+      setAlertModalMessage("Failed to delete listing.");
+      setAlertModal(true);
+    }
+  };
+
+  // Filter listings based on the search input
   const safeFilter = filter?.toLowerCase() || "";
   let filteredListings = listings.filter((listing) => {
     if (!showOnlyCurrentUser && listing.createdBy === auth.currentUser?.uid) {
@@ -153,6 +182,7 @@ function Listing({
     });
   });
 
+  // Function to handle listing selection
   const handleSelectListing = (listing, ref) => {
     if (listing.lat && listing.lng) {
       setSelectedMarker({
@@ -164,28 +194,9 @@ function Listing({
     scrollIntoView(ref);
   };
 
-
-  useEffect(() => {
-    // console.log("filtered:", filteredListings);
-    if (filteredListings) updateListings(filteredListings);
-  }, [filter]);
-
-  const updateListings= (newListings) => {
-    setListings(newListings);
-  }
-
-  // if a marker is selected, scroll to see the corresponding selected listing
-  useEffect(() => {
-    if (selectedMarker){ 
-      if (listingsRefs.current[selectedMarker.key]?.current){ // check if it exists in the refs dict
-        // check if the selected marker is the currently selected listing
-        scrollIntoView(listingsRefs.current[selectedMarker.key]);
-      }
-    }
-  }, [selectedMarker]);
-
+  // Function to scroll into view
   const scrollIntoView = (ref) => {
-    if (ref?.current){
+    if (ref?.current) {
       ref.current.scrollIntoView({
         behavior: "smooth",
         block: "start",
@@ -193,8 +204,23 @@ function Listing({
     }
   };
 
+  // Scroll to the selected marker when it changes
+  useEffect(() => {
+    if (selectedMarker) {
+      if (listingsRefs.current[selectedMarker.key]?.current) {
+        scrollIntoView(listingsRefs.current[selectedMarker.key]);
+      }
+    }
+  }, [selectedMarker]);
 
-  // 🔽 UI
+  // Update listings when the filter changes
+  useEffect(() => {
+    if (filteredListings) updateListings(filteredListings);
+  }, [filter]);
+
+  const updateListings = (newListings) => {
+    setListings(newListings);
+  };
 
   return (
     <div className="listing-container">
@@ -202,54 +228,67 @@ function Listing({
         <p>No listings found.</p>
       ) : (
         filteredListings.map((listing) => {
-          if (!listingsRefs.current[listing.key]){
+          if (!listingsRefs.current[listing.key]) {
             listingsRefs.current[listing.key] = React.createRef();
           }
 
           return (
-          <div
-            key={listing.key}
-            ref={listingsRefs.current[listing.key]}
-            className={`listing-card ${selectedMarker?.key === listing.key ? "listing-active" : ""}`}
-            onClick={() => handleSelectListing(listing, listingsRefs.current[listing.key])}
-          >
-            <h3 className="listing-title">{listing.title || "No title"}</h3>
-            <p className="listing-date">
-              {listing.startDate} → {listing.endDate}
-            </p>
-            <p className="listing-location">
-              📍 {listing.location || "Unknown"}
-            </p>
-            <p className="listing-price">
-              💵 ${listing.price || "?"}/month
-            </p>
-            <p className="listing-description">
-              {listing.description || "No description available"}
-            </p>
+            <div
+              key={listing.key}
+              ref={listingsRefs.current[listing.key]}
+              className={`listing-card ${selectedMarker?.key === listing.key ? "listing-active" : ""}`}
+              onClick={() => handleSelectListing(listing, listingsRefs.current[listing.key])}
+            >
+              {/* // Display listing details */}
+              <h3 className="listing-title">{listing.title || "No title"}</h3>
+              <p className="listing-date">
+                {listing.startDate} → {listing.endDate}
+              </p>
+              <p className="listing-location">
+                📍 {listing.location || "Unknown"}
+              </p>
+              <p className="listing-price">
+                💵 ${listing.price || "?"}/month
+              </p>
+              <p className="listing-description">
+                {listing.description || "No description available"}
+              </p>
 
-            {pathname === "/" && !showOnlyCurrentUser ? (
-              <button
-                className="listing-action-button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleRequestMatch(listing);
-                }}
-              >
-                Request Match
-              </button>
-            ) : (pathname === "/profile" || showOnlyCurrentUser) && (
-              <button
-                className="listing-action-button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  updateListing(listing);
-                }}
-              >
-                Update Listing
-              </button>
-            )}
-          </div>
-        )})
+              {pathname === "/" && !showOnlyCurrentUser ? (
+                <button
+                  className="listing-action-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRequestMatch(listing);
+                  }}
+                >
+                  Request Match
+                </button>
+              ) : (pathname === "/profile" || showOnlyCurrentUser) && (
+                <div className="listing-buttons">
+                  <button
+                    className="listing-action-button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      updateListing(listing);
+                    }}
+                  >
+                    Update
+                  </button>
+                  <button
+                    className="listing-action-button delete"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteListing(listing.key);
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })
       )}
 
       {/*  Update Listing Modal, having warning */}
@@ -264,7 +303,6 @@ function Listing({
       )}
     </div>
   );
-
 }
 
 export default Listing;

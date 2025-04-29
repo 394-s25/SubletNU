@@ -142,6 +142,22 @@
   background-color: #4c1c9b;
 }
 
+/* listing action button  delete */
+.listing-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.listing-action-button.delete {
+  background-color: #dc2626;
+}
+
+.listing-action-button.delete:hover {
+  background-color: #b91c1c;
+}
+
+
+
 /* media query for mobile devices */
 @media (max-width: 768px) {
   .page-container {

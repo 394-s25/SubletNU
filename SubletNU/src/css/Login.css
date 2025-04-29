@@ -1,3 +1,5 @@
+/* Login.css */
+/* Reset some default styles */
 .outer-container {
   min-height: 100vh;
   padding: 20px;
@@ -9,6 +11,7 @@
 }
 
 
+/* /login box */
 .login-box {
   display: flex;
   flex-direction: row;
@@ -24,6 +27,7 @@
 }
 
 
+/* /login left part of the box */
 .login-left {
   flex: 1;
   /* background-color: #f6efff; */
@@ -42,6 +46,7 @@
 }
 
 
+/* /login title */
 .login-title {
   font-size: 22px;
   font-weight: 700;
@@ -56,6 +61,7 @@
 }
 
 
+/* different style for the ibum icon */
 .login-button {
   display: flex;
   align-items: center;
@@ -69,9 +75,11 @@
   transition: all 0.2s ease;
 }
 
+/* /login button hover effect */
 .login-button:hover {
   background-color: #f1f1f1;
 }
+
 
 .login-left h4{
   color: black;
@@ -95,6 +103,9 @@
   flex-shrink: 1;
 }
 
+
+/* /login button using google icon */
+
 .google-icon {
   width: 20px;
   height: 20px;
@@ -112,6 +123,7 @@
 }
 
 
+/* fit the screen to the mobile phone */
 @media (max-width: 768px) {
   .login-box {
     flex-direction: column;

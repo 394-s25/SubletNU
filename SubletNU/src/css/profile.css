@@ -1,3 +1,29 @@
+.profile-content {
+  flex: 1;
+  padding: 60px 40px;
+  background-color: #f6efff;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 24px;
+  overflow-y: auto;
+}
+
+.profile-box {
+  display: flex;
+  flex-direction: row;
+  width: 90%;
+  max-width: 1800px;
+  height: 80vh;
+  max-height: 700px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  box-sizing: border-box;
+  padding: 20px;
+}
+
 .profile-header {
   text-align: center;
   margin-bottom: 32px;
@@ -8,13 +34,14 @@
   font-weight: 700;
   color: #1f2937;
   margin-bottom: 12px;
+  text-align: center;
 }
 
 .profile-email {
   font-size: 16px;
   color: #6b7280;
+  text-align: center;
 }
-
 
 .profile-section-grid {
   display: flex;
@@ -22,7 +49,6 @@
   gap: 24px;
   flex-wrap: wrap;
 }
-
 
 .profile-card {
   flex: 1;
@@ -38,12 +64,10 @@
   transition: all 0.3s ease;
 }
 
-
 .profile-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
 }
-
 
 .profile-item {
   padding: 16px;
@@ -53,7 +77,6 @@
   font-size: 15px;
   color: #374151;
 }
-
 
 .profile-button {
   margin-top: 8px;
@@ -71,16 +94,40 @@
   background-color: #4c1c9b;
 }
 
-
 .empty-message {
   color: #9ca3af;
   font-style: italic;
   padding-left: 8px;
 }
 
-
 @media (max-width: 768px) {
+  .profile-box {
+    padding: 20px;
+  }
+
   .profile-section-grid {
     flex-direction: column;
   }
+}
+
+.add-listing-button {
+  display: block;
+  margin: 0 auto 24px;
+  padding: 6px 12px;
+  font-size: 14px;
+  background-color: #5b21b6;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.add-listing-button.small {
+  padding: 6px 12px;
+  font-size: 14px;
+}
+
+.add-listing-button:hover {
+  background-color: #4c1d95;
 }
