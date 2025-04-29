@@ -1,12 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { db, auth } from "../firebase";
-import {
-  ref,
-  push,
-  update,
-  get,
-  onChildAdded
-} from "firebase/database";
+import { ref, update, get, onChildAdded } from "firebase/database";
 import CreateListingModal from "../components/CreateListingModel";
 import AlertModal from "../components/AlertModal";
 import PageWrapper from "../components/PageWrapper";
@@ -40,7 +34,7 @@ export default function ProfilePage() {
             if (s.exists()) {
               const match = s.val();
               setRequests((prev) =>
-                prev.some((m) => m.key === match.key) ? prev : [...prev, match]
+                prev.find((m) => m.key === match.key) ? prev : [...prev, match]
               );
             }
           });
@@ -58,7 +52,7 @@ export default function ProfilePage() {
             const match = s.val();
             if (match) {
               setMatches((prev) =>
-                prev.some((m) => m.key === key) ? prev : [...prev, match]
+                prev.find((m) => m.key === key) ? prev : [...prev, match]
               );
             }
           });
