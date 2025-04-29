@@ -20,7 +20,6 @@ export default function ProfilePage() {
   );
   const dbMatchesRef = ref(db, "users/" + auth.currentUser.uid + "/userMatches");
 
-  // listen for new requests & matches
   useEffect(() => {
     let unsubscribeReqAdded = null;
     let unsubscribeMatchAdded = null;
@@ -41,7 +40,7 @@ export default function ProfilePage() {
         }
       });
     } catch (err) {
-      console.error(err);
+      console.error("Error onChildAdded for match requests:", err);
     }
 
     try {
@@ -59,7 +58,7 @@ export default function ProfilePage() {
         }
       });
     } catch (err) {
-      console.error(err);
+      console.error("Error onChildAdded for match data:", err);
     }
 
     return () => {
@@ -78,7 +77,6 @@ export default function ProfilePage() {
       [requesterPath]: null
     });
 
-    // add to userMatches
     await update(ref(db), {
       [`users/${matchObj.owner}/userMatches/${matchObj.key}`]: matchObj.listingId,
       [`users/${matchObj.requester}/userMatches/${matchObj.key}`]: matchObj.listingId
