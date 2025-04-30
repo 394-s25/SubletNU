@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { db, auth } from "../firebase";
-import { ref, push, update, get, onChildAdded } from "firebase/database";
+import { ref, push, update, get, onChildAdded, serverTimestamp } from "firebase/database";
 import CreateListingModal from "../components/CreateListingModel";
 import AlertModal from "../components/AlertModal";
 import PageWrapper from "../components/PageWrapper";
@@ -68,7 +68,7 @@ export default function ProfilePage() {
   }, [dbMatchReqRef, dbMatchesRef, matchRequestsIds]);
 
   const handleApproveMatch = async (matchObj) => {
-    await update(ref(db, "matches/" + matchObj.key), { approved: "true" });
+    await update(ref(db, "matches/" + matchObj.key), { approved: "true", approvedAt: serverTimestamp() });
     const ownerPath = `users/${matchObj.owner}/userMatchRequests/${matchObj.key}`;
     const requesterPath = `users/${matchObj.requester}/userMatchRequests/${matchObj.key}`;
 

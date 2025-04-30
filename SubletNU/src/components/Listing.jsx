@@ -9,6 +9,7 @@ import {
   set,
   get,
   update,
+  serverTimestamp
 } from "firebase/database";
 import { useLocation } from "react-router-dom";
 import UpdateListingModal from "./UpdateListingModal";
@@ -119,8 +120,9 @@ function Listing({
         owner,
         ownerContact,
         requesterContact: auth.currentUser.email,
-        requestedAt: new Date(),
+        requestedAt: serverTimestamp(),
         approved: false,
+        approvedAt: false
       };
 
       // Push the match request to the database
