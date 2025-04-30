@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Listing from "../components/Listing";
 import PageWrapper from "../components/PageWrapper";
@@ -7,7 +7,7 @@ import AlertModal from "../components/AlertModal";
 import TopAlert from "../components/TopAlert";
 import LeafletMapBox from "../components/LeafletMapBox";
 import { db, auth } from "../firebase";
-import { ref, onValue, get } from "firebase/database";
+import { ref, onValue, get, onChildAdded, serverTimestamp } from "firebase/database";
 import "../css/home.css";
 
 export default function HomePage() {
@@ -21,18 +21,65 @@ export default function HomePage() {
   const [alertModalMessage, setAlertModalMessage] = useState("");
   const [selectedMarker, setSelectedMarker] = useState({}); // to be used for filtering so user can see the listing they've just selected
   const [showTopAlert, setTopAlert] = useState(false);
+  const [bannerMessage, setBannerMessage] = useState("A new request or match has been made. Check your Profile for more information.");
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [editingListing, setEditingListing] = useState(null);
 
   const dbMatchReqRef = ref(db, "users/" + auth.currentUser.uid + "/userMatchRequests");
   const dbMatchesRef = ref(db, "users/" + auth.currentUser.uid + "/userMatches");
+  let initTimeRef = useRef(Date.now()); //current timestamp
 
   useEffect(() => {
-    return onValue(dbMatchesRef, (snapshot) => {
-      if (snapshot.exists()) setTopAlert(true);
+    const unsubscribe = onChildAdded(dbMatchesRef, async (snapshot) => {
+      if (snapshot.exists()){
+        const checkIfNew = await checkForNewEntry(snapshot.key, true);
+        if (checkIfNew){
+          setBannerMessage("A match has been approved for a sublet you requested. Check your Profile for more information.");
+          setTopAlert(true);
+        }
+      }
     });
 
+    return () => unsubscribe();
   }, [dbMatchesRef]);
+
+  useEffect(() => {
+    const unsubscribe = onChildAdded(dbMatchReqRef, async (snapshot) => {
+      if (snapshot.exists()){ 
+        const checkIfNew = await checkForNewEntry(snapshot.key, false);
+        if (checkIfNew){
+          setBannerMessage("A new request has been made for one of your sublet listings. Check your Profile for more information.");
+          setTopAlert(true);
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, [dbMatchReqRef]);
+
+  const checkForNewEntry = async (snapshot, isMatch) => {
+    // check its timestamp against the current timestamp
+    // retrieve the listing
+    const snap = await get(ref(db, "matches/" + snapshot));
+    const data = snap.exists() ? snap.val() : null; 
+
+    if (isMatch && data){
+      // checking if the match has been updated
+      return data.approvedAt;
+    } else {
+      // looking at req data
+      if (data && data.requestedAt && data.owner === auth.currentUser.uid) {
+        const createdAt = data.requestedAt;
+        const isServerTimestamp = typeof createdAt === "object" && createdAt.hasOwnProperty("seconds");
+        const createdTime = isServerTimestamp ? createdAt.seconds * 1000 : createdAt;
+        
+
+        return createdTime > initTimeRef.current;
+      }
+    }
+    return false;
+  };
+
 
 
 
@@ -40,6 +87,11 @@ export default function HomePage() {
     setAlertModal(false);
     setAlertModalMessage("");
   };
+
+  const onBannerClose = () => {
+    setTopAlert(false);
+    initTimeRef.current = Date.now(); //update timestamp
+  }
 
   return (
     <PageWrapper
@@ -133,9 +185,9 @@ export default function HomePage() {
       {/* // Top Alert */}
       {showTopAlert && (
         <TopAlert
-          message="A new request or match has been made. Check your Profile for more information."
+          message={bannerMessage}
           type="info" // or "error"
-          onClose={() => setTopAlert(false)}
+          onClose={() => onBannerClose()}
         />
       )}
 
